@@ -52,7 +52,7 @@
   .count-badge{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);white-space:nowrap;}
   .count-badge span{color:var(--accent2);}
   .pulse-dot{display:inline-block;width:5px;height:5px;background:var(--cyan);border-radius:50%;margin-right:0.4rem;animation:pulse 2s infinite;}
-  .sync-dot{display:inline-block;width:5px;height:5px;background:var(--accent2);border-radius:50%;margin-left:0.4rem;animation:pulse 1s infinite;}
+  .live-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--cyan);border:1px solid var(--cyan);padding:0.1rem 0.35rem;border-radius:2px;margin-left:0.4rem;letter-spacing:0.1em;opacity:0.8;}
   .view-toggle{display:flex;gap:0.2rem;}
   .view-btn{background:none;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.75rem;border-radius:2px;touch-action:manipulation;transition:all 0.2s;}
   .view-btn.active{border-color:var(--accent);color:var(--accent2);background:rgba(123,94,167,0.1);}
@@ -215,7 +215,7 @@
 <header>
   <div class="logo">YORU<span>夜</span><span class="logo-sub">AI ANIME GALLERY</span></div>
   <div class="header-right">
-    <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> IMAGES</span>
+    <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> IMAGES<span class="live-badge">LIVE</span></span>
     <div class="view-toggle">
       <button class="view-btn" id="btn-compact" onclick="setView('compact')">⊞</button>
       <button class="view-btn active" id="btn-normal" onclick="setView('normal')">⊟</button>
@@ -313,10 +313,9 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBk_QX3wMDEwT-GsyCww2kLg6nRUEvzj1w",
@@ -333,6 +332,7 @@ const COL = 'yoru-images';
 
 // Cloudinary
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
+const CLOUD_API_KEY='525886811592581', CLOUD_API_SECRET='4g95iR1lrNiTwWts1P-oGt7UtWM';
 const UPLOAD_URL=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
 // Password
@@ -372,22 +372,26 @@ window.closeSidebar=function(){document.getElementById('sidebar').classList.remo
 // State
 let images=[],sortMode='new',filterTag='all',viewMode='normal',currentModalId=null;
 
-// Load from Firestore
-async function loadImages(){
-  setLoading(true,'LOADING FROM CLOUD...',30);
-  try{
-    const q=query(collection(db,COL),orderBy('date','desc'));
-    const snap=await getDocs(q);
-    images=snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
-    setLoading(true,'SYNC COMPLETE',100);
-    setTimeout(()=>setLoading(false),600);
-  }catch(e){
-    console.error(e);
-    setLoading(true,'CONNECTION ERROR',100);
-    setTimeout(()=>setLoading(false),1000);
-    showToast('⚠ Firestore接続エラー');
-  }
-  renderGallery();updateStats();
+// ===== リアルタイム同期（onSnapshot） =====
+function loadImages(){
+  setLoading(true,'CONNECTING TO CLOUD...',30);
+  const q=query(collection(db,COL),orderBy('date','desc'));
+  onSnapshot(
+    q,
+    (snap)=>{
+      images=snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
+      setLoading(true,'LIVE SYNC ACTIVE',100);
+      setTimeout(()=>setLoading(false),600);
+      renderGallery();
+      updateStats();
+    },
+    (e)=>{
+      console.error(e);
+      setLoading(true,'CONNECTION ERROR',100);
+      setTimeout(()=>setLoading(false),1000);
+      showToast('⚠ Firestore接続エラー');
+    }
+  );
 }
 
 function setLoading(show,text,pct){
@@ -417,14 +421,14 @@ async function handleFiles(files){
     try{
       const url=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
       const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size};
-      const ref=await addDoc(collection(db,COL),data);
-      images.unshift({firestoreId:ref.id,...data});
+      await addDoc(collection(db,COL),data);
+      // onSnapshotが自動でimages配列を更新するのでunshiftは不要
     }catch(e){showToast(`⚠ ${file.name} 失敗`);}
     done++;
   }
   be.style.width='100%';le.textContent=`✓ ${done}枚完了`;
   setTimeout(()=>{pe.style.display='none';be.style.width='0%';},2000);
-  renderGallery();updateStats();showToast(`✓ ${done}枚をクラウドに保存`);
+  showToast(`✓ ${done}枚をクラウドに保存`);
 }
 
 function uploadToCloudinary(file,onProgress){
@@ -435,6 +439,28 @@ function uploadToCloudinary(file,onProgress){
     xhr.onload=()=>{xhr.status===200?resolve(JSON.parse(xhr.responseText).secure_url):reject();};
     xhr.onerror=()=>reject();xhr.send(fd);
   });
+}
+
+// ===== Cloudinary削除 =====
+async function deleteFromCloudinary(publicId){
+  const timestamp=Math.floor(Date.now()/1000);
+  const sigStr=`public_id=${publicId}&timestamp=${timestamp}${CLOUD_API_SECRET}`;
+  const buf=await crypto.subtle.digest('SHA-1',new TextEncoder().encode(sigStr));
+  const signature=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const form=new FormData();
+  form.append('public_id',publicId);
+  form.append('api_key',CLOUD_API_KEY);
+  form.append('timestamp',String(timestamp));
+  form.append('signature',signature);
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/destroy`,{method:'POST',body:form});
+  return res.json();
+}
+
+// URLからpublicIdを抽出（Firestoreにない場合のフォールバック）
+function extractPublicId(url){
+  if(!url)return null;
+  const m=url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
+  return m?m[1]:null;
 }
 
 // Firestore update helper
@@ -478,7 +504,7 @@ function renderGallery(){
         <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)">✕</button>
       </div>
       <div class="delete-confirm" id="dc-${img.firestoreId}">
-        <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--pink);">Cloudinaryからは手動削除が必要</span></p>
+        <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--muted);">Firestore + Cloudinaryから削除します</span></p>
         <div class="btn-row"><button class="btn-confirm" onclick="deleteImg('${img.firestoreId}')">DELETE</button><button class="btn-cancel" onclick="cancelDelete('${img.firestoreId}')">CANCEL</button></div>
       </div>
     </div>`;
@@ -515,10 +541,20 @@ window.toggleNsfw=async function(id,e){
 window.confirmDelete=function(id,e){if(e)e.stopPropagation();document.getElementById(`dc-${id}`).classList.add('show');};
 window.cancelDelete=function(id){document.getElementById(`dc-${id}`).classList.remove('show');};
 window.deleteImg=async function(id){
+  const img=images.find(i=>i.firestoreId===id);
   images=images.filter(i=>i.firestoreId!==id);
   renderGallery();updateStats();
   await removeImg(id);
-  showToast('🗑 削除しました');
+  // Cloudinaryからも削除
+  const pid=img?.publicId||extractPublicId(img?.url);
+  if(pid){
+    try{
+      const r=await deleteFromCloudinary(pid);
+      showToast(r.result==='ok'?'🗑 削除完了（Cloudinaryも）':'🗑 Firestore削除済（Cloudinary確認を）');
+    }catch(e){showToast('🗑 Firestore削除済（Cloudinary失敗）');}
+  }else{
+    showToast('🗑 削除しました');
+  }
 };
 window.setSort=function(mode,btn){sortMode=mode;document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGallery();};
 window.setTag=function(tag,el){filterTag=tag;document.querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderGallery();closeSidebar();};
