@@ -644,7 +644,7 @@ function renderTagCloud(){
   }else{
     tags.sort((a,b)=>a.localeCompare(b));
   }
-  cloud.innerHTML=tags.map(t=>`<span class="tc-tag${activeTag===t?' active':''}" onclick="setActiveTag('${escHtml(t)}')">${escHtml(t)}<span class="tc-count">${counts[t]}</span></span>`).join('');
+  cloud.innerHTML=tags.map(t=>`<span class="tc-tag${activeTag===t?' active':''}" onclick="setActiveTag(${JSON.stringify(t)})">${escHtml(t)}<span class="tc-count">${counts[t]}</span></span>`).join('');
 }
 
 window.setTagSort=function(mode){
@@ -734,7 +734,7 @@ window.openModal=function(id){
   document.getElementById('modal-title').textContent=img.name;
   document.getElementById('modal-meta').textContent=formatDate(img.date)+(img.size?' · '+formatSize(img.size):'');
   const mt=document.getElementById('modal-tags');
-  mt.innerHTML=(img.tags||[]).map(t=>`<span class="modal-tag" onclick="setActiveTag('${escHtml(t)}');closeModalDirect();">${escHtml(t)}</span>`).join('');
+  mt.innerHTML=(img.tags||[]).map(t=>`<span class="modal-tag" onclick="setActiveTag(${JSON.stringify(t)});closeModalDirect();">${escHtml(t)}</span>`).join('');
   const fb=document.getElementById('modal-fav-btn');fb.textContent=img.fav?'★':'☆';fb.classList.toggle('active',img.fav);
   document.getElementById('modal-nsfw-btn').classList.toggle('active',img.nsfw);
   document.getElementById('modal').classList.add('open');
