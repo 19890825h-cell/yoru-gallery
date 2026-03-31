@@ -79,6 +79,21 @@
   .sort-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.6rem;font-family:'Space Mono',monospace;font-size:0.6rem;cursor:pointer;border-radius:2px;transition:all 0.2s;touch-action:manipulation;}
   .sort-btn.active{border-color:var(--accent);color:var(--accent2);background:rgba(123,94,167,0.1);}
 
+  /* FOLDER TABS */
+  .folder-tabs{display:flex;gap:2px;margin-bottom:1rem;}
+  .folder-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.6rem 0.75rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;cursor:pointer;border-radius:3px;transition:all 0.2s;touch-action:manipulation;position:relative;overflow:hidden;}
+  .folder-tab::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:0;transition:opacity 0.2s;}
+  .folder-tab.active{background:var(--surface2);border-color:var(--accent);color:var(--accent2);}
+  .folder-tab.active::before{opacity:1;}
+  .folder-tab.nsfw-tab.active{border-color:var(--pink);color:var(--pink);}
+  .folder-tab.nsfw-tab.active::before{background:var(--pink);}
+  .folder-tab.nsfw-tab:not(.active):hover{border-color:rgba(224,108,138,0.4);}
+  .folder-count{font-size:0.6rem;background:var(--surface2);border:1px solid var(--border);padding:0.05rem 0.35rem;border-radius:999px;min-width:1.4rem;text-align:center;}
+  .folder-tab.active .folder-count{background:rgba(123,94,167,0.2);border-color:var(--accent);}
+  .folder-tab.nsfw-tab.active .folder-count{background:rgba(224,108,138,0.15);border-color:var(--pink);}
+  .nsfw-section-banner{display:none;align-items:center;gap:0.6rem;padding:0.6rem 0.9rem;background:rgba(224,108,138,0.08);border:1px solid rgba(224,108,138,0.25);border-radius:3px;margin-bottom:0.75rem;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--pink);letter-spacing:0.05em;}
+  .nsfw-section-banner.show{display:flex;}
+
   /* GALLERY */
   .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:2px;background:var(--border);}
   .gallery-grid.compact{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));}
@@ -239,13 +254,26 @@
         </div>
       </div>
       <input type="file" id="file-input" accept="image/*" multiple>
-      <div class="gallery-header" style="margin-top:1rem;">
-        <span class="gallery-title">GALLERY</span>
-        <div class="sort-controls">
+      <div class="folder-tabs" style="margin-top:1rem;">
+        <button class="folder-tab active" id="tab-safe" onclick="setFolder('safe',this)">
+          📁 SAFE <span class="folder-count" id="count-safe">0</span>
+        </button>
+        <button class="folder-tab nsfw-tab" id="tab-nsfw" onclick="setFolder('nsfw',this)">
+          🔞 NSFW <span class="folder-count" id="count-nsfw">0</span>
+        </button>
+        <button class="folder-tab" id="tab-all" onclick="setFolder('all',this)">
+          ⊞ ALL <span class="folder-count" id="count-all">0</span>
+        </button>
+      </div>
+      <div class="gallery-header">
+        <div class="sort-controls" style="margin-left:0;">
           <button class="sort-btn active" onclick="setSort('new',this)">NEW</button>
           <button class="sort-btn" onclick="setSort('name',this)">NAME</button>
           <button class="sort-btn" onclick="setSort('fav',this)">FAV</button>
         </div>
+      </div>
+      <div class="nsfw-section-banner" id="nsfw-banner">
+        🔞 NSFWフォルダー — このエリアの画像は成人向けコンテンツです
       </div>
       <div class="gallery-grid" id="gallery">
         <div class="empty-state"><div class="empty-state-icon">🌙</div><h3>NO IMAGES YET</h3><p>タップして画像を追加しよう</p></div>
@@ -266,10 +294,6 @@
           <span class="toggle-label">サムネをぼかす</span>
           <label class="toggle-switch"><input type="checkbox" id="nsfw-blur-toggle" checked onchange="renderGallery()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
         </div>
-        <div class="toggle-row" style="margin-bottom:0;">
-          <span class="toggle-label">NSFWのみ表示</span>
-          <label class="toggle-switch"><input type="checkbox" id="nsfw-only-toggle" onchange="renderGallery()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
-        </div>
       </div>
       <div class="sidebar-card">
         <div class="sidebar-label">SEARCH</div>
@@ -280,7 +304,6 @@
         <div class="tag-list">
           <span class="tag active" onclick="setTag('all',this)">ALL</span>
           <span class="tag" onclick="setTag('fav',this)">⭐ FAV</span>
-          <span class="tag" onclick="setTag('nsfw',this)">🔞 NSFW</span>
         </div>
       </div>
       <div class="sidebar-card">
@@ -370,7 +393,7 @@ window.toggleSidebar=function(){document.getElementById('sidebar').classList.tog
 window.closeSidebar=function(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-backdrop').classList.remove('show');};
 
 // State
-let images=[],sortMode='new',filterTag='all',viewMode='normal',currentModalId=null;
+let images=[],sortMode='new',filterTag='all',folderMode='safe',viewMode='normal',currentModalId=null;
 
 // ===== リアルタイム同期（onSnapshot） =====
 function loadImages(){
@@ -474,21 +497,44 @@ async function removeImg(firestoreId){
 // Gallery
 function getSorted(){
   let list=[...images];
+  // フォルダー分け
+  if(folderMode==='safe') list=list.filter(i=>!i.nsfw);
+  else if(folderMode==='nsfw') list=list.filter(i=>i.nsfw);
+  // 検索・フィルター
   const q=document.getElementById('search-input').value.toLowerCase();
-  if(q)list=list.filter(i=>i.name.toLowerCase().includes(q));
+  if(q)list=list.filter(i=>(i.name||'').toLowerCase().includes(q));
   if(filterTag==='fav')list=list.filter(i=>i.fav);
-  if(filterTag==='nsfw')list=list.filter(i=>i.nsfw);
-  if(document.getElementById('nsfw-only-toggle').checked)list=list.filter(i=>i.nsfw);
+  // ソート
   if(sortMode==='new')list.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if(sortMode==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
+  if(sortMode==='name')list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   if(sortMode==='fav')list.sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
   return list;
 }
 
+window.setFolder=function(folder,el){
+  folderMode=folder;
+  document.querySelectorAll('.folder-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  // NSFWフォルダーはバナーを表示
+  document.getElementById('nsfw-banner').classList.toggle('show', folder==='nsfw');
+  renderGallery();
+  closeSidebar();
+};
+
 function renderGallery(){
-  const grid=document.getElementById('gallery'),blurNsfw=document.getElementById('nsfw-blur-toggle').checked,list=getSorted();
+  // NSFWフォルダー内では blur をオフ（意図して見るエリアのため）
+  const blurNsfw=document.getElementById('nsfw-blur-toggle').checked && folderMode!=='nsfw';
+  const grid=document.getElementById('gallery'),list=getSorted();
   grid.className='gallery-grid'+(viewMode!=='normal'?` ${viewMode}`:'');
-  if(!list.length){grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🌙</div><h3>${images.length===0?'NO IMAGES YET':'NO RESULTS'}</h3><p>${images.length===0?'タップして画像を追加しよう':'条件を変えてみて'}</p></div>`;return;}
+  if(!list.length){
+    const emptyMsg={
+      safe:['🌙','NO SAFE IMAGES','健全な画像はまだありません'],
+      nsfw:['🔞','NO NSFW IMAGES','NSFWフォルダーは空です'],
+      all: ['🌙','NO IMAGES YET','タップして画像を追加しよう'],
+    }[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
+    grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyMsg[0]}</div><h3>${emptyMsg[1]}</h3><p>${emptyMsg[2]}</p></div>`;
+    return;
+  }
   grid.innerHTML=list.map(img=>{
     const bl=img.nsfw&&blurNsfw;
     return `<div class="gallery-item${bl?' nsfw-blur':''}" data-id="${img.firestoreId}">
@@ -513,10 +559,15 @@ function renderGallery(){
 }
 
 function updateStats(){
+  const safeCount=images.filter(i=>!i.nsfw).length;
+  const nsfwCount=images.filter(i=>i.nsfw).length;
   document.getElementById('stat-total').textContent=images.length;
   document.getElementById('stat-fav').textContent=images.filter(i=>i.fav).length;
-  document.getElementById('stat-nsfw').textContent=images.filter(i=>i.nsfw).length;
+  document.getElementById('stat-nsfw').textContent=nsfwCount;
   document.getElementById('header-count').textContent=images.length;
+  document.getElementById('count-safe').textContent=safeCount;
+  document.getElementById('count-nsfw').textContent=nsfwCount;
+  document.getElementById('count-all').textContent=images.length;
 }
 
 function formatDate(iso){const d=new Date(iso);return`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;}
