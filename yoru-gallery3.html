@@ -194,6 +194,32 @@
     .logo-sub{display:none;}
     .action-btn{width:36px;height:36px;}
   }
+  /* TAG BROWSER */
+  .tag-sort-btns{display:flex;gap:0.25rem;}
+  .tag-sort-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:0.15rem 0.4rem;font-family:'Space Mono',monospace;font-size:0.5rem;cursor:pointer;border-radius:2px;transition:all 0.2s;}
+  .tag-sort-btn.active{border-color:var(--accent);color:var(--accent2);}
+  .tag-browser-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;}
+  .tag-cloud{display:flex;flex-wrap:wrap;gap:0.3rem;max-height:180px;overflow-y:auto;padding-right:2px;}
+  .tag-cloud::-webkit-scrollbar{width:3px;}
+  .tag-cloud::-webkit-scrollbar-track{background:var(--surface);}
+  .tag-cloud::-webkit-scrollbar-thumb{background:var(--border);}
+  .tc-tag{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.2rem 0.5rem;font-family:'Space Mono',monospace;font-size:0.55rem;cursor:pointer;transition:all 0.2s;border-radius:2px;white-space:nowrap;touch-action:manipulation;}
+  .tc-tag:hover{border-color:var(--accent);color:var(--accent2);}
+  .tc-tag.active{border-color:var(--cyan);color:var(--cyan);background:rgba(86,182,194,0.1);}
+  .tc-count{font-size:0.45rem;color:var(--muted);margin-left:0.2rem;}
+  /* ACTIVE TAG BAR */
+  .active-tag-bar{display:none;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;background:rgba(86,182,194,0.08);border:1px solid rgba(86,182,194,0.25);border-radius:3px;margin-bottom:0.75rem;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--cyan);}
+  .active-tag-bar.show{display:flex;}
+  .atb-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .atb-clear{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0;line-height:1;flex-shrink:0;}
+  /* ITEM TAGS (gallery overlay) */
+  .item-tags{display:flex;gap:0.25rem;flex-wrap:wrap;margin-top:0.3rem;}
+  .item-tag{background:rgba(5,5,8,0.75);border:1px solid rgba(86,182,194,0.4);color:var(--cyan);padding:0.08rem 0.3rem;font-size:0.46rem;font-family:'Space Mono',monospace;border-radius:2px;white-space:nowrap;}
+  /* MODAL TAGS */
+  .modal-tags{display:flex;flex-wrap:wrap;gap:0.3rem;width:100%;order:4;margin-top:0.3rem;}
+  .modal-tag{background:var(--surface2);border:1px solid rgba(86,182,194,0.35);color:var(--cyan);padding:0.2rem 0.5rem;font-size:0.55rem;font-family:'Space Mono',monospace;border-radius:2px;cursor:pointer;transition:border-color 0.2s;touch-action:manipulation;}
+  .modal-tag:hover{border-color:var(--cyan);}
+
   @media(max-width:380px){
     .gallery-grid{grid-template-columns:repeat(2,1fr);}
     .gallery-grid.compact{grid-template-columns:repeat(3,1fr);}
@@ -275,6 +301,10 @@
       <div class="nsfw-section-banner" id="nsfw-banner">
         🔞 NSFWフォルダー — このエリアの画像は成人向けコンテンツです
       </div>
+      <div class="active-tag-bar" id="active-tag-bar">
+        <span class="atb-label" id="atb-label">🏷 </span>
+        <button class="atb-clear" onclick="clearActiveTag()">✕</button>
+      </div>
       <div class="gallery-grid" id="gallery">
         <div class="empty-state"><div class="empty-state-icon">🌙</div><h3>NO IMAGES YET</h3><p>タップして画像を追加しよう</p></div>
       </div>
@@ -307,6 +337,16 @@
         </div>
       </div>
       <div class="sidebar-card">
+        <div class="tag-browser-header">
+          <div class="sidebar-label" style="margin-bottom:0;">TAGS</div>
+          <div class="tag-sort-btns">
+            <button class="tag-sort-btn active" id="ts-alpha" onclick="setTagSort('alpha')">A-Z</button>
+            <button class="tag-sort-btn" id="ts-kana" onclick="setTagSort('kana')">あ-ん</button>
+          </div>
+        </div>
+        <div class="tag-cloud" id="tag-cloud"><span style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);">タグなし</span></div>
+      </div>
+      <div class="sidebar-card">
         <div class="sidebar-label">STORAGE</div>
         <p style="font-size:0.7rem;color:var(--muted);line-height:1.8;">
           <span style="color:var(--cyan);">☁</span> Cloudinary — 画像ファイル<br>
@@ -331,6 +371,7 @@
       <button class="action-btn fav" id="modal-fav-btn" onclick="toggleFavFromModal()">☆</button>
       <button class="action-btn nsfw-toggle" id="modal-nsfw-btn" onclick="toggleNsfwFromModal()">🔞</button>
       <div class="modal-meta" id="modal-meta"></div>
+      <div class="modal-tags" id="modal-tags"></div>
     </div>
   </div>
 </div>
@@ -394,6 +435,7 @@ window.closeSidebar=function(){document.getElementById('sidebar').classList.remo
 
 // State
 let images=[],sortMode='new',filterTag='all',folderMode='safe',viewMode='normal',currentModalId=null;
+let activeTag=null,tagSort='alpha';
 
 // ===== リアルタイム同期（onSnapshot） =====
 function loadImages(){
@@ -504,6 +546,7 @@ function getSorted(){
   const q=document.getElementById('search-input').value.toLowerCase();
   if(q)list=list.filter(i=>(i.name||'').toLowerCase().includes(q));
   if(filterTag==='fav')list=list.filter(i=>i.fav);
+  if(activeTag)list=list.filter(i=>(i.tags||[]).includes(activeTag));
   // ソート
   if(sortMode==='new')list.sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(sortMode==='name')list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
@@ -537,12 +580,14 @@ function renderGallery(){
   }
   grid.innerHTML=list.map(img=>{
     const bl=img.nsfw&&blurNsfw;
+    const topTags=(img.tags||[]).slice(0,3).map(t=>`<span class="item-tag">${escHtml(t)}</span>`).join('');
     return `<div class="gallery-item${bl?' nsfw-blur':''}" data-id="${img.firestoreId}">
       ${img.nsfw?'<div class="nsfw-badge">NSFW</div>':''}
       <img src="${img.url}" alt="${img.name}" loading="lazy" onclick="openModal('${img.firestoreId}')">
       <div class="gallery-item-overlay" onclick="openModal('${img.firestoreId}')">
-        <div class="item-title">${img.name}</div>
+        <div class="item-title">${escHtml(img.name)}</div>
         <div class="item-meta">${formatDate(img.date)}</div>
+        ${topTags?`<div class="item-tags">${topTags}</div>`:''}
       </div>
       <div class="item-actions">
         <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)">${img.fav?'★':'☆'}</button>
@@ -556,7 +601,77 @@ function renderGallery(){
     </div>`;
   }).join('');
   document.getElementById('header-count').textContent=images.length;
+  renderTagCloud();
 }
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ===== TAG BROWSER =====
+// 50音ローマ字順キー（ローマ字→かな行順）
+function kanaOrderKey(tag){
+  const t=tag.toLowerCase();
+  // 各かな行の代表ローマ字プレフィックス順
+  const kanaRows=[
+    ['a'],'i','u','e','o',
+    'ka','ki','ku','ke','ko',
+    'sa','shi','si','su','se','so',
+    'ta','chi','ti','tsu','tu','te','to',
+    'na','ni','nu','ne','no',
+    'ha','hi','fu','hu','he','ho',
+    'ma','mi','mu','me','mo',
+    'ya','yu','yo',
+    'ra','ri','ru','re','ro',
+    'wa','wi','we','wo',
+    'n_',
+  ].flat();
+  for(let i=0;i<kanaRows.length;i++){
+    if(t.startsWith(kanaRows[i]))return String(i).padStart(3,'0')+t;
+  }
+  return 'zzz'+t; // 未分類は末尾
+}
+
+function renderTagCloud(){
+  const cloud=document.getElementById('tag-cloud');
+  if(!cloud)return;
+  // 全画像からタグ集計
+  const counts={};
+  images.forEach(img=>(img.tags||[]).forEach(t=>{counts[t]=(counts[t]||0)+1;}));
+  const tags=Object.keys(counts);
+  if(!tags.length){cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">タグなし</span>';return;}
+  // ソート
+  if(tagSort==='kana'){
+    tags.sort((a,b)=>kanaOrderKey(a).localeCompare(kanaOrderKey(b)));
+  }else{
+    tags.sort((a,b)=>a.localeCompare(b));
+  }
+  cloud.innerHTML=tags.map(t=>`<span class="tc-tag${activeTag===t?' active':''}" onclick="setActiveTag('${escHtml(t)}')">${escHtml(t)}<span class="tc-count">${counts[t]}</span></span>`).join('');
+}
+
+window.setTagSort=function(mode){
+  tagSort=mode;
+  document.getElementById('ts-alpha').classList.toggle('active',mode==='alpha');
+  document.getElementById('ts-kana').classList.toggle('active',mode==='kana');
+  renderTagCloud();
+};
+
+window.setActiveTag=function(tag){
+  activeTag=activeTag===tag?null:tag;
+  const bar=document.getElementById('active-tag-bar');
+  if(activeTag){
+    bar.classList.add('show');
+    document.getElementById('atb-label').textContent=`🏷 ${activeTag}`;
+  }else{
+    bar.classList.remove('show');
+  }
+  renderGallery();
+  closeSidebar();
+};
+
+window.clearActiveTag=function(){
+  activeTag=null;
+  document.getElementById('active-tag-bar').classList.remove('show');
+  renderGallery();
+};
 
 function updateStats(){
   const safeCount=images.filter(i=>!i.nsfw).length;
@@ -618,6 +733,8 @@ window.openModal=function(id){
   document.getElementById('modal-img').className='modal-img';
   document.getElementById('modal-title').textContent=img.name;
   document.getElementById('modal-meta').textContent=formatDate(img.date)+(img.size?' · '+formatSize(img.size):'');
+  const mt=document.getElementById('modal-tags');
+  mt.innerHTML=(img.tags||[]).map(t=>`<span class="modal-tag" onclick="setActiveTag('${escHtml(t)}');closeModalDirect();">${escHtml(t)}</span>`).join('');
   const fb=document.getElementById('modal-fav-btn');fb.textContent=img.fav?'★':'☆';fb.classList.toggle('active',img.fav);
   document.getElementById('modal-nsfw-btn').classList.toggle('active',img.nsfw);
   document.getElementById('modal').classList.add('open');
