@@ -347,6 +347,14 @@
         <div class="tag-cloud" id="tag-cloud"><span style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);">タグなし</span></div>
       </div>
       <div class="sidebar-card">
+        <div class="sidebar-label">TAGGING</div>
+        <p style="font-size:0.65rem;color:var(--muted);line-height:1.8;margin-bottom:0.5rem;">
+          <span style="color:var(--accent2);">🏷</span> HuggingFace WD14<br>
+          <span style="font-size:0.58rem;">キャラクター認識＋タグ自動付与</span>
+        </p>
+        <button onclick="setHfToken()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;cursor:pointer;border-radius:3px;letter-spacing:0.1em;">HFトークン設定</button>
+      </div>
+      <div class="sidebar-card">
         <div class="sidebar-label">STORAGE</div>
         <p style="font-size:0.7rem;color:var(--muted);line-height:1.8;">
           <span style="color:var(--cyan);">☁</span> Cloudinary — 画像ファイル<br>
@@ -370,6 +378,7 @@
       <div class="modal-title" id="modal-title"></div>
       <button class="action-btn fav" id="modal-fav-btn" onclick="toggleFavFromModal()">☆</button>
       <button class="action-btn nsfw-toggle" id="modal-nsfw-btn" onclick="toggleNsfwFromModal()">🔞</button>
+      <button class="action-btn" id="modal-retag-btn" onclick="retagFromModal()" title="キャラクター認識＋タグ付け">🏷</button>
       <div class="modal-meta" id="modal-meta"></div>
       <div class="modal-tags" id="modal-tags"></div>
     </div>
@@ -397,6 +406,11 @@ const COL = 'yoru-images';
 // Cloudinary
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
 const CLOUD_API_KEY='525886811592581', CLOUD_API_SECRET='4g95iR1lrNiTwWts1P-oGt7UtWM';
+
+// HuggingFace WD14タガー（キャラクター認識＋タグ付け）
+// トークンはlocalStorageに保存（サイドバーの「HFトークン設定」から入力）
+let HF_TOKEN = localStorage.getItem('yoru-hf-token') || '';
+const WD14_MODEL = 'SmilingWolf/wd-v1-4-moat-tagger-v2';
 const UPLOAD_URL=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
 // Password
@@ -485,9 +499,15 @@ async function handleFiles(files){
     le.textContent=`アップロード中... ${done+1}/${files.length}`;
     try{
       const url=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
-      const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size};
-      await addDoc(collection(db,COL),data);
-      // onSnapshotが自動でimages配列を更新するのでunshiftは不要
+      const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[]};
+      const ref=await addDoc(collection(db,COL),data);
+      // 自動タグ付け（HF WD14）
+      if(HF_TOKEN){
+        le.textContent=`タグ付け中... ${done+1}/${files.length}`;
+        tagWithWD14(url).then(tags=>{
+          if(tags.length)updateDoc(doc(db,COL,ref.id),{tags});
+        }).catch(()=>{});
+      }
     }catch(e){showToast(`⚠ ${file.name} 失敗`);}
     done++;
   }
@@ -495,6 +515,75 @@ async function handleFiles(files){
   setTimeout(()=>{pe.style.display='none';be.style.width='0%';},2000);
   showToast(`✓ ${done}枚をクラウドに保存`);
 }
+
+// ===== HuggingFace WD14タガー（キャラクター認識＋タグ付け） =====
+async function tagWithWD14(imageUrl){
+  try{
+    let res,text;
+    for(let attempt=0;attempt<3;attempt++){
+      const endpoints=[
+        `https://router.huggingface.co/hf-inference/models/${WD14_MODEL}`,
+        `https://api-inference.huggingface.co/models/${WD14_MODEL}`,
+      ];
+      const endpoint=endpoints[attempt%endpoints.length];
+      res=await fetch(endpoint,{
+        method:'POST',
+        headers:{'Authorization':`Bearer ${HF_TOKEN}`,'Content-Type':'application/json'},
+        body:JSON.stringify({inputs:imageUrl}),
+      });
+      text=await res.text();
+      if(res.status===503){
+        let wait=10000;
+        try{wait=Math.min(JSON.parse(text).estimated_time*1000,25000);}catch(_){}
+        await new Promise(r=>setTimeout(r,wait));
+        continue;
+      }
+      break;
+    }
+    if(!res.ok) throw new Error(`HF HTTP ${res.status}: ${text.substring(0,100)}`);
+    const json=JSON.parse(text);
+    if(!Array.isArray(json)) throw new Error('予期しないレスポンス形式');
+    const EXCLUDE=new Set(['safe','general','sensitive','questionable','explicit',
+      'rating:general','rating:sensitive','rating:questionable','rating:explicit']);
+    return json
+      .filter(p=>p.score>0.35&&p.label&&!EXCLUDE.has(p.label))
+      .sort((a,b)=>b.score-a.score)
+      .map(p=>p.label.replace(/ /g,'_'));
+  }catch(err){
+    console.warn('[YORU] WD14エラー:', err.message);
+    return[];
+  }
+}
+
+window.setHfToken=function(){
+  const v=prompt('HuggingFace APIトークンを入力（https://huggingface.co/settings/tokens）:',HF_TOKEN);
+  if(v===null)return;
+  HF_TOKEN=v.trim();
+  localStorage.setItem('yoru-hf-token',HF_TOKEN);
+  showToast(HF_TOKEN?'✓ HFトークン設定完了':'⚠ トークンをクリアしました');
+};
+
+window.retagFromModal=async function(){
+  if(!currentModalId)return;
+  if(!HF_TOKEN){showToast('⚠ HFトークン未設定（サイドバーから設定）');return;}
+  const img=images.find(i=>i.firestoreId===currentModalId);
+  if(!img)return;
+  const btn=document.getElementById('modal-retag-btn');
+  btn.textContent='🔄';btn.disabled=true;
+  try{
+    showToast('🏷 タグ付け中...',5000);
+    const tags=await tagWithWD14(img.url);
+    await updateImg(currentModalId,{tags});
+    img.tags=tags;
+    const mt=document.getElementById('modal-tags');
+    mt.innerHTML=tags.map(t=>`<span class="modal-tag" onclick="setActiveTag(${JSON.stringify(t)});closeModalDirect();">${escHtml(t)}</span>`).join('');
+    showToast(`✓ ${tags.length}個のタグを付けました`);
+  }catch(e){
+    showToast(`⚠ タグ付け失敗: ${e.message}`);
+  }finally{
+    btn.textContent='🏷';btn.disabled=false;
+  }
+};
 
 function uploadToCloudinary(file,onProgress){
   return new Promise((resolve,reject)=>{
