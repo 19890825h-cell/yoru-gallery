@@ -12,11 +12,19 @@
     --text:#c9c7e8;--muted:#5a587a;--border:#1e1e36;--glow:rgba(123,94,167,0.3);
     --header-h:52px;
   }
+  body.light-mode {
+    --bg:#f5f5f8;--bg2:#eeeef3;--surface:#ffffff;--surface2:#f0f0f5;
+    --text:#1a1a2e;--muted:#6b6b8a;--border:#d0d0e0;
+    --accent:#6d28d9;--accent2:#7c3aed;--cyan:#0891b2;--pink:#db2777;
+    --glow:rgba(109,40,217,0.2);
+  }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;overflow-x:hidden;}
   body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:0.4;}
   body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9998;}
   body.modal-open::after{display:none;}
+  body.light-mode::before{opacity:0.15;}
+  body.light-mode::after{background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.01) 2px,rgba(0,0,0,0.01) 4px);}
 
   /* PASSWORD */
   #pw-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;padding:1rem;transition:opacity 0.5s,visibility 0.5s;}
@@ -45,6 +53,7 @@
 
   /* HEADER */
   header{position:sticky;top:0;z-index:100;background:rgba(5,5,8,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:var(--header-h);gap:0.5rem;}
+  body.light-mode header{background:rgba(245,245,248,0.92);}
   .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.12em;color:var(--accent2);text-shadow:0 0 15px var(--glow);animation:glitch 8s infinite;line-height:1;flex-shrink:0;}
   .logo span{color:var(--cyan);}
   .logo-sub{font-family:'Space Mono',monospace;font-size:0.45rem;color:var(--muted);letter-spacing:0.2em;display:block;margin-top:-3px;}
@@ -57,6 +66,10 @@
   .view-btn{background:none;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.75rem;border-radius:2px;touch-action:manipulation;transition:all 0.2s;}
   .view-btn.active{border-color:var(--accent);color:var(--accent2);background:rgba(123,94,167,0.1);}
   .sidebar-toggle{display:none;background:none;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;border-radius:2px;touch-action:manipulation;flex-shrink:0;}
+  /* Header icon buttons (theme, select) */
+  .hdr-btn{background:none;border:1px solid var(--border);color:var(--muted);height:28px;padding:0 0.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;border-radius:2px;touch-action:manipulation;transition:all 0.2s;white-space:nowrap;font-family:'Space Mono',monospace;letter-spacing:0.05em;}
+  .hdr-btn:hover,.hdr-btn.active{border-color:var(--accent);color:var(--accent2);background:rgba(123,94,167,0.1);}
+  .hdr-btn.select-active{border-color:var(--cyan);color:var(--cyan);background:rgba(86,182,194,0.1);}
 
   /* UPLOAD */
   .upload-zone{border:2px dashed var(--border);border-radius:4px;padding:1.75rem 1.5rem;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--surface);position:relative;overflow:hidden;}
@@ -94,10 +107,21 @@
   .nsfw-section-banner{display:none;align-items:center;gap:0.6rem;padding:0.6rem 0.9rem;background:rgba(224,108,138,0.08);border:1px solid rgba(224,108,138,0.25);border-radius:3px;margin-bottom:0.75rem;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--pink);letter-spacing:0.05em;}
   .nsfw-section-banner.show{display:flex;}
 
+  /* QUICK FILTER (search area) */
+  .quick-filter{display:flex;gap:0.3rem;margin-top:0.4rem;}
+  .qf-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:0.2rem 0.5rem;font-family:'Space Mono',monospace;font-size:0.55rem;cursor:pointer;border-radius:2px;transition:all 0.2s;touch-action:manipulation;}
+  .qf-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(86,182,194,0.1);}
+
   /* GALLERY */
   .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:2px;background:var(--border);}
   .gallery-grid.compact{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));}
   .gallery-grid.large{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}
+  /* Masonry mode */
+  .gallery-grid.masonry{display:block;columns:5 160px;column-gap:2px;background:transparent;}
+  .gallery-grid.masonry.compact{columns:7 110px;}
+  .gallery-grid.masonry.large{columns:3 240px;}
+  .gallery-grid.masonry .gallery-item{break-inside:avoid;aspect-ratio:unset;margin-bottom:2px;display:block;}
+  .gallery-grid.masonry .gallery-item img{height:auto;width:100%;}
   .gallery-item{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--surface);cursor:pointer;}
   .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s ease,filter 0.3s;filter:brightness(0.9) saturate(0.95);}
   .gallery-item:hover img{transform:scale(1.06);filter:brightness(1) saturate(1.1);}
@@ -126,6 +150,15 @@
   .empty-state-icon{font-size:3.5rem;margin-bottom:1rem;opacity:0.3;}
   .empty-state h3{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.1em;color:var(--surface2);margin-bottom:0.5rem;}
   .empty-state p{font-size:0.8rem;}
+  /* Select mode checkmark */
+  .gallery-item.selected::before{content:'✓';position:absolute;top:0.4rem;right:0.4rem;width:22px;height:22px;background:var(--cyan);color:#000;font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:50%;z-index:6;pointer-events:none;}
+  .gallery-item.selected{outline:2px solid var(--cyan);}
+  /* Load more */
+  .load-more-wrap{display:flex;justify-content:center;padding:1.5rem 0;gap:1rem;align-items:center;}
+  .load-more-btn{background:none;border:1px solid var(--accent);color:var(--accent2);padding:0.55rem 1.5rem;font-family:'Space Mono',monospace;font-size:0.68rem;cursor:pointer;border-radius:2px;touch-action:manipulation;transition:all 0.2s;letter-spacing:0.1em;}
+  .load-more-btn:hover{background:rgba(123,94,167,0.15);}
+  .load-more-info{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);}
+  #load-more-sentinel{height:1px;}
 
   /* SIDEBAR */
   .sidebar{position:sticky;top:calc(var(--header-h) + 1rem);display:flex;flex-direction:column;gap:1rem;}
@@ -166,6 +199,29 @@
   .modal-meta{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--muted);width:100%;order:3;}
   .modal-close{position:absolute;top:0.6rem;right:0.6rem;background:rgba(5,5,8,0.85);border:1px solid var(--border);color:var(--muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;border-radius:2px;z-index:10;touch-action:manipulation;transition:all 0.2s;}
   .modal-close:active{border-color:var(--pink);color:var(--pink);}
+  /* Modal nav buttons */
+  .modal-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(5,5,8,0.75);border:1px solid var(--border);color:var(--text);width:40px;height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;border-radius:3px;z-index:10;touch-action:manipulation;transition:all 0.2s;backdrop-filter:blur(8px);}
+  .modal-nav:hover{border-color:var(--accent);color:var(--accent2);}
+  .modal-nav.prev{left:0.5rem;}
+  .modal-nav.next{right:0.5rem;}
+
+  /* MODAL TAGS EDIT */
+  .modal-tag{position:relative;background:var(--surface2);border:1px solid rgba(86,182,194,0.35);color:var(--cyan);padding:0.2rem 0.5rem;font-size:0.55rem;font-family:'Space Mono',monospace;border-radius:2px;cursor:pointer;transition:border-color 0.2s;touch-action:manipulation;display:inline-flex;align-items:center;gap:0.3rem;}
+  .modal-tag:hover{border-color:var(--cyan);}
+  .modal-tag .tag-del{display:none;background:none;border:none;color:var(--pink);cursor:pointer;padding:0;font-size:0.75rem;line-height:1;flex-shrink:0;}
+  .modal-tag:hover .tag-del{display:inline;}
+  .tag-add-btn{background:none;border:1px dashed var(--border);color:var(--muted);padding:0.2rem 0.5rem;font-size:0.55rem;font-family:'Space Mono',monospace;border-radius:2px;cursor:pointer;transition:all 0.2s;touch-action:manipulation;}
+  .tag-add-btn:hover{border-color:var(--accent);color:var(--accent2);}
+  .tag-add-input{background:var(--surface2);border:1px solid var(--accent);color:var(--text);padding:0.2rem 0.5rem;font-size:0.55rem;font-family:'Space Mono',monospace;border-radius:2px;outline:none;width:90px;}
+
+  /* SELECTION BAR */
+  #select-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface2);border-top:2px solid var(--cyan);padding:0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom));display:none;align-items:center;gap:0.5rem;z-index:300;flex-wrap:wrap;}
+  #select-bar.show{display:flex;}
+  .sel-count{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--cyan);flex:1;white-space:nowrap;}
+  .sel-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:0.35rem 0.65rem;font-family:'Space Mono',monospace;font-size:0.62rem;cursor:pointer;border-radius:2px;touch-action:manipulation;transition:all 0.2s;white-space:nowrap;}
+  .sel-btn:hover{border-color:var(--accent);color:var(--accent2);}
+  .sel-btn.danger:hover{border-color:var(--pink);color:var(--pink);}
+  .sel-btn.dismiss{color:var(--muted);}
 
   /* TOAST */
   .toast{position:fixed;bottom:calc(1.5rem + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--accent);color:var(--text);padding:0.65rem 1.25rem;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.05em;opacity:0;transition:all 0.3s;z-index:9997;box-shadow:0 0 20px var(--glow);white-space:nowrap;border-radius:2px;}
@@ -191,6 +247,8 @@
     .modal{border:none;}
     .logo-sub{display:none;}
     .action-btn{width:36px;height:36px;}
+    .modal-nav{width:34px;height:50px;font-size:1rem;}
+    .count-badge{display:none;}
   }
   /* TAG BROWSER */
   .tag-sort-btns{display:flex;gap:0.25rem;}
@@ -214,14 +272,11 @@
   .item-tags{display:flex;gap:0.25rem;flex-wrap:wrap;margin-top:0.3rem;}
   .item-tag{background:rgba(5,5,8,0.75);border:1px solid rgba(86,182,194,0.4);color:var(--cyan);padding:0.08rem 0.3rem;font-size:0.46rem;font-family:'Space Mono',monospace;border-radius:2px;white-space:nowrap;}
   /* MODAL TAGS */
-  .modal-tags{display:flex;flex-wrap:wrap;gap:0.3rem;width:100%;order:4;margin-top:0.3rem;}
-  .modal-tag{background:var(--surface2);border:1px solid rgba(86,182,194,0.35);color:var(--cyan);padding:0.2rem 0.5rem;font-size:0.55rem;font-family:'Space Mono',monospace;border-radius:2px;cursor:pointer;transition:border-color 0.2s;touch-action:manipulation;}
-  .modal-tag:hover{border-color:var(--cyan);}
+  .modal-tags{display:flex;flex-wrap:wrap;gap:0.3rem;width:100%;order:4;margin-top:0.3rem;align-items:center;}
 
   @media(max-width:380px){
     .gallery-grid{grid-template-columns:repeat(2,1fr);}
     .gallery-grid.compact{grid-template-columns:repeat(3,1fr);}
-    .count-badge{display:none;}
   }
   /* ZOOM CONTROLS (PCのみ表示) */
   .zoom-controls{position:absolute;bottom:0.6rem;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:0.2rem;background:rgba(5,5,8,0.85);border:1px solid var(--border);border-radius:3px;padding:0.2rem 0.5rem;backdrop-filter:blur(8px);z-index:5;user-select:none;}
@@ -261,10 +316,13 @@
   <div class="logo">YORU<span>夜</span><span class="logo-sub">AI ANIME GALLERY</span></div>
   <div class="header-right">
     <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> IMAGES<span class="live-badge">LIVE</span></span>
+    <button class="hdr-btn" id="btn-theme" onclick="toggleTheme()" title="ライト/ダーク切替">🌙</button>
+    <button class="hdr-btn" id="btn-select" onclick="toggleSelectMode()" title="一括選択モード">SELECT</button>
     <div class="view-toggle">
       <button class="view-btn" id="btn-compact" onclick="setView('compact')">⊞</button>
       <button class="view-btn active" id="btn-normal" onclick="setView('normal')">⊟</button>
       <button class="view-btn" id="btn-large" onclick="setView('large')">⊠</button>
+      <button class="view-btn" id="btn-masonry" onclick="toggleMasonry()" title="本来の比率で表示">⊞N</button>
     </div>
     <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
   </div>
@@ -300,6 +358,7 @@
           <button class="sort-btn active" onclick="setSort('new',this)">NEW</button>
           <button class="sort-btn" onclick="setSort('name',this)">NAME</button>
           <button class="sort-btn" onclick="setSort('fav',this)">FAV</button>
+          <button class="sort-btn" id="sort-rnd" onclick="setSort('rnd',this)">RND</button>
         </div>
       </div>
       <div class="nsfw-section-banner" id="nsfw-banner">
@@ -311,6 +370,11 @@
       </div>
       <div class="gallery-grid" id="gallery">
         <div class="empty-state"><div class="empty-state-icon">🌙</div><h3>NO IMAGES YET</h3><p>タップして画像を追加しよう</p></div>
+      </div>
+      <div id="load-more-sentinel"></div>
+      <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
+        <span class="load-more-info" id="load-more-info"></span>
+        <button class="load-more-btn" onclick="loadMoreImages()">さらに読み込む</button>
       </div>
     </div>
     <div class="sidebar" id="sidebar">
@@ -331,7 +395,12 @@
       </div>
       <div class="sidebar-card">
         <div class="sidebar-label">SEARCH</div>
-        <div class="search-wrap"><span class="search-icon">⌕</span><input class="search-input" id="search-input" placeholder="ファイル名で検索..." oninput="renderGallery()"></div>
+        <div class="search-wrap"><span class="search-icon">⌕</span><input class="search-input" id="search-input" placeholder="#タグ or ファイル名..." oninput="renderGallery()"></div>
+        <div class="quick-filter" style="margin-top:0.4rem;">
+          <button class="qf-btn active" id="qf-all" onclick="setQuickFilter('all',this)">ALL</button>
+          <button class="qf-btn" id="qf-safe" onclick="setQuickFilter('safe',this)">SAFE</button>
+          <button class="qf-btn" id="qf-nsfw" onclick="setQuickFilter('nsfw',this)">NSFW</button>
+        </div>
       </div>
       <div class="sidebar-card">
         <div class="sidebar-label">FILTER</div>
@@ -374,7 +443,9 @@
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal" id="modal-box">
     <button class="modal-close" onclick="closeModalDirect()">✕</button>
-    <div class="modal-img-wrap">
+    <button class="modal-nav prev" id="modal-prev" onclick="navigateModal(-1)">←</button>
+    <button class="modal-nav next" id="modal-next" onclick="navigateModal(1)">→</button>
+    <div class="modal-img-wrap" id="modal-img-wrap">
       <img class="modal-img" id="modal-img" src="" alt="">
       <div class="zoom-controls" id="zoom-controls">
         <button class="zoom-btn" onclick="window.zoomOut()" title="縮小">－</button>
@@ -388,11 +459,23 @@
       <button class="action-btn fav" id="modal-fav-btn" onclick="toggleFavFromModal()">☆</button>
       <button class="action-btn nsfw-toggle" id="modal-nsfw-btn" onclick="toggleNsfwFromModal()">🔞</button>
       <button class="action-btn" id="modal-retag-btn" onclick="retagFromModal()" title="キャラクター認識＋タグ付け">🏷</button>
+      <button class="action-btn" id="modal-dl-btn" onclick="downloadCurrentImage()" title="ダウンロード">⬇</button>
       <div class="modal-meta" id="modal-meta"></div>
       <div class="modal-tags" id="modal-tags"></div>
     </div>
   </div>
 </div>
+
+<!-- Selection Bar -->
+<div id="select-bar">
+  <span class="sel-count" id="sel-count">0件選択中</span>
+  <button class="sel-btn" onclick="bulkFav()">★ FAV</button>
+  <button class="sel-btn" onclick="bulkNsfw()">🔞 NSFW</button>
+  <button class="sel-btn" onclick="bulkDownload()">⬇ DL</button>
+  <button class="sel-btn danger" onclick="bulkDelete()">🗑 削除</button>
+  <button class="sel-btn dismiss" onclick="exitSelectMode()">✕ 解除</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -416,8 +499,7 @@ const COL = 'yoru-images';
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
 const CLOUD_API_KEY='525886811592581', CLOUD_API_SECRET='4g95iR1lrNiTwWts1P-oGt7UtWM';
 
-// HuggingFace WD14タガー（キャラクター認識＋タグ付け）
-// トークンはlocalStorageに保存（サイドバーの「HFトークン設定」から入力）
+// HuggingFace WD14
 let HF_TOKEN = localStorage.getItem('yoru-hf-token') || '';
 const WD14_MODEL = 'SmilingWolf/wd-v1-4-moat-tagger-v2';
 const UPLOAD_URL=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
@@ -452,13 +534,28 @@ if(sessionStorage.getItem('yoru-auth')==='1'){
   loadImages();
 }
 
+// ===== THEME (9) =====
+let lightMode=localStorage.getItem('yoru-theme')==='light';
+function applyTheme(){
+  document.body.classList.toggle('light-mode',lightMode);
+  document.getElementById('btn-theme').textContent=lightMode?'☀':'🌙';
+}
+applyTheme();
+window.toggleTheme=function(){lightMode=!lightMode;localStorage.setItem('yoru-theme',lightMode?'light':'dark');applyTheme();};
+
 // Sidebar
 window.toggleSidebar=function(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-backdrop').classList.toggle('show');};
 window.closeSidebar=function(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-backdrop').classList.remove('show');};
 
 // State
 let images=[],sortMode='new',filterTag='all',folderMode='safe',viewMode='normal',currentModalId=null;
-let activeTag=null,tagSort='alpha';
+let activeTag=null,tagSort='alpha',masonryMode=false,quickFilter='all';
+let selectedIds=new Set(),selectMode=false;
+let shuffledList=[];
+// Pagination
+const PAGE_SIZE=50;
+let displayedCount=0;
+let currentList=[];
 
 // ===== リアルタイム同期（onSnapshot） =====
 function loadImages(){
@@ -484,13 +581,8 @@ function loadImages(){
 
 function setLoading(show,text,pct){
   const s=document.getElementById('loading-screen');
-  if(show){
-    s.classList.remove('hidden');
-    if(text)document.getElementById('loading-text').textContent=text;
-    if(pct!==undefined)document.getElementById('loading-bar').style.width=pct+'%';
-  }else{
-    s.classList.add('hidden');
-  }
+  if(show){s.classList.remove('hidden');if(text)document.getElementById('loading-text').textContent=text;if(pct!==undefined)document.getElementById('loading-bar').style.width=pct+'%';}
+  else{s.classList.add('hidden');}
 }
 
 // Upload
@@ -510,12 +602,9 @@ async function handleFiles(files){
       const url=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
       const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[]};
       const ref=await addDoc(collection(db,COL),data);
-      // 自動タグ付け（HF WD14）
       if(HF_TOKEN){
         le.textContent=`タグ付け中... ${done+1}/${files.length}`;
-        tagWithWD14(url).then(tags=>{
-          if(tags.length)updateDoc(doc(db,COL,ref.id),{tags});
-        }).catch(()=>{});
+        tagWithWD14(url).then(tags=>{if(tags.length)updateDoc(doc(db,COL,ref.id),{tags});}).catch(()=>{});
       }
     }catch(e){showToast(`⚠ ${file.name} 失敗`);}
     done++;
@@ -525,73 +614,44 @@ async function handleFiles(files){
   showToast(`✓ ${done}枚をクラウドに保存`);
 }
 
-// ===== HuggingFace WD14タガー（キャラクター認識＋タグ付け） =====
+// HuggingFace WD14
 async function tagWithWD14(imageUrl){
   try{
     let res,text;
     for(let attempt=0;attempt<3;attempt++){
-      const endpoints=[
-        `https://router.huggingface.co/hf-inference/models/${WD14_MODEL}`,
-        `https://api-inference.huggingface.co/models/${WD14_MODEL}`,
-      ];
+      const endpoints=[`https://router.huggingface.co/hf-inference/models/${WD14_MODEL}`,`https://api-inference.huggingface.co/models/${WD14_MODEL}`];
       const endpoint=endpoints[attempt%endpoints.length];
-      res=await fetch(endpoint,{
-        method:'POST',
-        headers:{'Authorization':`Bearer ${HF_TOKEN}`,'Content-Type':'application/json'},
-        body:JSON.stringify({inputs:imageUrl}),
-      });
+      res=await fetch(endpoint,{method:'POST',headers:{'Authorization':`Bearer ${HF_TOKEN}`,'Content-Type':'application/json'},body:JSON.stringify({inputs:imageUrl})});
       text=await res.text();
-      if(res.status===503){
-        let wait=10000;
-        try{wait=Math.min(JSON.parse(text).estimated_time*1000,25000);}catch(_){}
-        await new Promise(r=>setTimeout(r,wait));
-        continue;
-      }
+      if(res.status===503){let wait=10000;try{wait=Math.min(JSON.parse(text).estimated_time*1000,25000);}catch(_){}await new Promise(r=>setTimeout(r,wait));continue;}
       break;
     }
-    if(!res.ok) throw new Error(`HF HTTP ${res.status}: ${text.substring(0,100)}`);
-    const json=JSON.parse(text);
-    if(!Array.isArray(json)) throw new Error('予期しないレスポンス形式');
-    const EXCLUDE=new Set(['safe','general','sensitive','questionable','explicit',
-      'rating:general','rating:sensitive','rating:questionable','rating:explicit']);
-    return json
-      .filter(p=>p.score>0.35&&p.label&&!EXCLUDE.has(p.label))
-      .sort((a,b)=>b.score-a.score)
-      .map(p=>p.label.replace(/ /g,'_'));
-  }catch(err){
-    console.warn('[YORU] WD14エラー:', err.message);
-    return[];
-  }
+    if(!res.ok)throw new Error(`HF HTTP ${res.status}: ${text.substring(0,100)}`);
+    const json=JSON.parse(text);if(!Array.isArray(json))throw new Error('予期しないレスポンス形式');
+    const EXCLUDE=new Set(['safe','general','sensitive','questionable','explicit','rating:general','rating:sensitive','rating:questionable','rating:explicit']);
+    return json.filter(p=>p.score>0.35&&p.label&&!EXCLUDE.has(p.label)).sort((a,b)=>b.score-a.score).map(p=>p.label.replace(/ /g,'_'));
+  }catch(err){console.warn('[YORU] WD14エラー:', err.message);return[];}
 }
 
 window.setHfToken=function(){
   const v=prompt('HuggingFace APIトークンを入力（https://huggingface.co/settings/tokens）:',HF_TOKEN);
-  if(v===null)return;
-  HF_TOKEN=v.trim();
-  localStorage.setItem('yoru-hf-token',HF_TOKEN);
+  if(v===null)return;HF_TOKEN=v.trim();localStorage.setItem('yoru-hf-token',HF_TOKEN);
   showToast(HF_TOKEN?'✓ HFトークン設定完了':'⚠ トークンをクリアしました');
 };
 
 window.retagFromModal=async function(){
-  if(!currentModalId)return;
-  if(!HF_TOKEN){showToast('⚠ HFトークン未設定（サイドバーから設定）');return;}
-  const img=images.find(i=>i.firestoreId===currentModalId);
-  if(!img)return;
-  const btn=document.getElementById('modal-retag-btn');
-  btn.textContent='🔄';btn.disabled=true;
+  if(!currentModalId)return;if(!HF_TOKEN){showToast('⚠ HFトークン未設定（サイドバーから設定）');return;}
+  const img=images.find(i=>i.firestoreId===currentModalId);if(!img)return;
+  const btn=document.getElementById('modal-retag-btn');btn.textContent='🔄';btn.disabled=true;
   try{
     showToast('🏷 タグ付け中...',5000);
     const tags=await tagWithWD14(img.url);
     await updateImg(currentModalId,{tags});
     img.tags=tags;
-    const mt=document.getElementById('modal-tags');
-    mt.innerHTML=tags.map(t=>`<span class="modal-tag" onclick="setActiveTag(${JSON.stringify(t)});closeModalDirect();">${escHtml(t)}</span>`).join('');
+    renderModalTags(img);
     showToast(`✓ ${tags.length}個のタグを付けました`);
-  }catch(e){
-    showToast(`⚠ タグ付け失敗: ${e.message}`);
-  }finally{
-    btn.textContent='🏷';btn.disabled=false;
-  }
+  }catch(e){showToast(`⚠ タグ付け失敗: ${e.message}`);}
+  finally{btn.textContent='🏷';btn.disabled=false;}
 };
 
 function uploadToCloudinary(file,onProgress){
@@ -604,51 +664,56 @@ function uploadToCloudinary(file,onProgress){
   });
 }
 
-// ===== Cloudinary削除 =====
+// Cloudinary削除
 async function deleteFromCloudinary(publicId){
   const timestamp=Math.floor(Date.now()/1000);
   const sigStr=`public_id=${publicId}&timestamp=${timestamp}${CLOUD_API_SECRET}`;
   const buf=await crypto.subtle.digest('SHA-1',new TextEncoder().encode(sigStr));
   const signature=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  const form=new FormData();
-  form.append('public_id',publicId);
-  form.append('api_key',CLOUD_API_KEY);
-  form.append('timestamp',String(timestamp));
-  form.append('signature',signature);
+  const form=new FormData();form.append('public_id',publicId);form.append('api_key',CLOUD_API_KEY);form.append('timestamp',String(timestamp));form.append('signature',signature);
   const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/destroy`,{method:'POST',body:form});
   return res.json();
 }
 
-// URLからpublicIdを抽出（Firestoreにない場合のフォールバック）
 function extractPublicId(url){
-  if(!url)return null;
-  const m=url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
-  return m?m[1]:null;
+  if(!url)return null;const m=url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);return m?m[1]:null;
 }
 
-// Firestore update helper
-async function updateImg(firestoreId,data){
-  try{await updateDoc(doc(db,COL,firestoreId),data);}catch(e){showToast('⚠ 同期エラー');}
-}
-async function removeImg(firestoreId){
-  try{await deleteDoc(doc(db,COL,firestoreId));}catch(e){showToast('⚠ 削除エラー');}
-}
+// Firestore helpers
+async function updateImg(firestoreId,data){try{await updateDoc(doc(db,COL,firestoreId),data);}catch(e){showToast('⚠ 同期エラー');}}
+async function removeImg(firestoreId){try{await deleteDoc(doc(db,COL,firestoreId));}catch(e){showToast('⚠ 削除エラー');}}
 
-// Gallery
+// ===== QUICK FILTER (5) =====
+window.setQuickFilter=function(f,el){
+  quickFilter=f;
+  document.querySelectorAll('.qf-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderGallery();
+};
+
+// Gallery sorting
 function getSorted(){
   let list=[...images];
   // フォルダー分け
-  if(folderMode==='safe') list=list.filter(i=>!i.nsfw);
-  else if(folderMode==='nsfw') list=list.filter(i=>i.nsfw);
-  // 検索・フィルター
-  const q=document.getElementById('search-input').value.toLowerCase();
-  if(q)list=list.filter(i=>(i.name||'').toLowerCase().includes(q));
+  if(folderMode==='safe')list=list.filter(i=>!i.nsfw);
+  else if(folderMode==='nsfw')list=list.filter(i=>i.nsfw);
+  // クイックフィルター (5)
+  if(quickFilter==='safe')list=list.filter(i=>!i.nsfw);
+  else if(quickFilter==='nsfw')list=list.filter(i=>i.nsfw);
+  // 検索：#タグ or ファイル名 (5)
+  const q=document.getElementById('search-input').value.trim().toLowerCase();
+  if(q.startsWith('#')){
+    const t=q.slice(1);if(t)list=list.filter(i=>(i.tags||[]).some(tag=>tag.toLowerCase().includes(t)));
+  }else if(q){
+    list=list.filter(i=>(i.name||'').toLowerCase().includes(q));
+  }
   if(filterTag==='fav')list=list.filter(i=>i.fav);
   if(activeTag)list=list.filter(i=>(i.tags||[]).includes(activeTag));
   // ソート
   if(sortMode==='new')list.sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(sortMode==='name')list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   if(sortMode==='fav')list.sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
+  if(sortMode==='rnd')list=shuffledList.filter(i=>list.some(j=>j.firestoreId===i.firestoreId));
   return list;
 }
 
@@ -656,124 +721,139 @@ window.setFolder=function(folder,el){
   folderMode=folder;
   document.querySelectorAll('.folder-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  // NSFWフォルダーはバナーを表示
   document.getElementById('nsfw-banner').classList.toggle('show', folder==='nsfw');
-  renderGallery();
-  closeSidebar();
+  renderGallery();closeSidebar();
 };
 
-function renderGallery(){
-  // NSFWフォルダー内では blur をオフ（意図して見るエリアのため）
+// ===== PAGINATION (10) =====
+function renderGallery(reset){
   const blurNsfw=document.getElementById('nsfw-blur-toggle').checked && folderMode!=='nsfw';
-  const grid=document.getElementById('gallery'),list=getSorted();
-  grid.className='gallery-grid'+(viewMode!=='normal'?` ${viewMode}`:'');
-  if(!list.length){
-    const emptyMsg={
-      safe:['🌙','NO SAFE IMAGES','健全な画像はまだありません'],
-      nsfw:['🔞','NO NSFW IMAGES','NSFWフォルダーは空です'],
-      all: ['🌙','NO IMAGES YET','タップして画像を追加しよう'],
-    }[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
+  const grid=document.getElementById('gallery');
+  currentList=getSorted();
+  if(reset!==false)displayedCount=0;
+  // Masonry vs grid classes
+  let cls='gallery-grid';
+  if(masonryMode)cls+=' masonry';
+  if(viewMode!=='normal')cls+=` ${viewMode}`;
+  grid.className=cls;
+  if(!currentList.length){
+    const emptyMsg={safe:['🌙','NO SAFE IMAGES','健全な画像はまだありません'],nsfw:['🔞','NO NSFW IMAGES','NSFWフォルダーは空です'],all:['🌙','NO IMAGES YET','タップして画像を追加しよう']}[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
     grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyMsg[0]}</div><h3>${emptyMsg[1]}</h3><p>${emptyMsg[2]}</p></div>`;
-    return;
+    document.getElementById('load-more-wrap').style.display='none';
+    document.getElementById('header-count').textContent=images.length;
+    renderTagCloud();return;
   }
-  grid.innerHTML=list.map(img=>{
-    const bl=img.nsfw&&blurNsfw;
-    const topTags=(img.tags||[]).slice(0,3).map(t=>`<span class="item-tag">${escHtml(t)}</span>`).join('');
-    return `<div class="gallery-item${bl?' nsfw-blur':''}" data-id="${img.firestoreId}">
+  const toShow=currentList.slice(0,PAGE_SIZE);
+  displayedCount=toShow.length;
+  grid.innerHTML=toShow.map(img=>buildItemHtml(img,blurNsfw)).join('');
+  updateLoadMore();
+  document.getElementById('header-count').textContent=images.length;
+  renderTagCloud();
+}
+
+window.loadMoreImages=function(){
+  const blurNsfw=document.getElementById('nsfw-blur-toggle').checked && folderMode!=='nsfw';
+  const grid=document.getElementById('gallery');
+  const nextBatch=currentList.slice(displayedCount,displayedCount+PAGE_SIZE);
+  if(!nextBatch.length)return;
+  nextBatch.forEach(img=>{
+    const div=document.createElement('div');div.innerHTML=buildItemHtml(img,blurNsfw);
+    grid.appendChild(div.firstElementChild);
+  });
+  displayedCount+=nextBatch.length;
+  updateLoadMore();
+};
+
+function updateLoadMore(){
+  const wrap=document.getElementById('load-more-wrap');
+  const info=document.getElementById('load-more-info');
+  const remaining=currentList.length-displayedCount;
+  if(remaining>0){
+    wrap.style.display='flex';
+    info.textContent=`${displayedCount} / ${currentList.length}枚`;
+  }else{
+    wrap.style.display='none';
+  }
+}
+
+// Intersection Observer for auto load
+const sentinel=document.getElementById('load-more-sentinel');
+if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting&&currentList.length>displayedCount){window.loadMoreImages();}
+  },{rootMargin:'200px'});
+  io.observe(sentinel);
+}
+
+function buildItemHtml(img,blurNsfw){
+  const bl=img.nsfw&&blurNsfw;
+  const topTags=(img.tags||[]).slice(0,3).map(t=>`<span class="item-tag">${escHtml(t)}</span>`).join('');
+  const sel=selectedIds.has(img.firestoreId)?'selected':'';
+  if(selectMode){
+    return `<div class="gallery-item${bl?' nsfw-blur':''} ${sel}" data-id="${img.firestoreId}" onclick="toggleSelect('${img.firestoreId}',event)">
       ${img.nsfw?'<div class="nsfw-badge">NSFW</div>':''}
-      <img src="${img.url}" alt="${img.name}" loading="lazy" onclick="openModal('${img.firestoreId}')">
-      <div class="gallery-item-overlay" onclick="openModal('${img.firestoreId}')">
+      <img src="${img.url}" alt="${img.name}" loading="lazy">
+      <div class="gallery-item-overlay">
         <div class="item-title">${escHtml(img.name)}</div>
         <div class="item-meta">${formatDate(img.date)}</div>
         ${topTags?`<div class="item-tags">${topTags}</div>`:''}
       </div>
-      <div class="item-actions">
-        <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)">${img.fav?'★':'☆'}</button>
-        <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)">🔞</button>
-        <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)">✕</button>
-      </div>
-      <div class="delete-confirm" id="dc-${img.firestoreId}">
-        <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--muted);">Firestore + Cloudinaryから削除します</span></p>
-        <div class="btn-row"><button class="btn-confirm" onclick="deleteImg('${img.firestoreId}')">DELETE</button><button class="btn-cancel" onclick="cancelDelete('${img.firestoreId}')">CANCEL</button></div>
-      </div>
     </div>`;
-  }).join('');
-  document.getElementById('header-count').textContent=images.length;
-  renderTagCloud();
+  }
+  return `<div class="gallery-item${bl?' nsfw-blur':''}" data-id="${img.firestoreId}">
+    ${img.nsfw?'<div class="nsfw-badge">NSFW</div>':''}
+    <img src="${img.url}" alt="${img.name}" loading="lazy" onclick="openModal('${img.firestoreId}')">
+    <div class="gallery-item-overlay" onclick="openModal('${img.firestoreId}')">
+      <div class="item-title">${escHtml(img.name)}</div>
+      <div class="item-meta">${formatDate(img.date)}</div>
+      ${topTags?`<div class="item-tags">${topTags}</div>`:''}
+    </div>
+    <div class="item-actions">
+      <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)">${img.fav?'★':'☆'}</button>
+      <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)">🔞</button>
+      <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)">✕</button>
+    </div>
+    <div class="delete-confirm" id="dc-${img.firestoreId}">
+      <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--muted);">Firestore + Cloudinaryから削除します</span></p>
+      <div class="btn-row"><button class="btn-confirm" onclick="deleteImg('${img.firestoreId}')">DELETE</button><button class="btn-cancel" onclick="cancelDelete('${img.firestoreId}')">CANCEL</button></div>
+    </div>
+  </div>`;
 }
 
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ===== TAG BROWSER =====
-// 50音ローマ字順キー（ローマ字→かな行順）
 function kanaOrderKey(tag){
   const t=tag.toLowerCase();
-  // 各かな行の代表ローマ字プレフィックス順
-  const kanaRows=[
-    ['a'],'i','u','e','o',
-    'ka','ki','ku','ke','ko',
-    'sa','shi','si','su','se','so',
-    'ta','chi','ti','tsu','tu','te','to',
-    'na','ni','nu','ne','no',
-    'ha','hi','fu','hu','he','ho',
-    'ma','mi','mu','me','mo',
-    'ya','yu','yo',
-    'ra','ri','ru','re','ro',
-    'wa','wi','we','wo',
-    'n_',
-  ].flat();
-  for(let i=0;i<kanaRows.length;i++){
-    if(t.startsWith(kanaRows[i]))return String(i).padStart(3,'0')+t;
-  }
-  return 'zzz'+t; // 未分類は末尾
+  const kanaRows=['a','i','u','e','o','ka','ki','ku','ke','ko','sa','shi','si','su','se','so','ta','chi','ti','tsu','tu','te','to','na','ni','nu','ne','no','ha','hi','fu','hu','he','ho','ma','mi','mu','me','mo','ya','yu','yo','ra','ri','ru','re','ro','wa','wi','we','wo','n_'];
+  for(let i=0;i<kanaRows.length;i++){if(t.startsWith(kanaRows[i]))return String(i).padStart(3,'0')+t;}
+  return 'zzz'+t;
 }
 
 function renderTagCloud(){
-  const cloud=document.getElementById('tag-cloud');
-  if(!cloud)return;
-  // 全画像からタグ集計
-  const counts={};
-  images.forEach(img=>(img.tags||[]).forEach(t=>{counts[t]=(counts[t]||0)+1;}));
+  const cloud=document.getElementById('tag-cloud');if(!cloud)return;
+  const counts={};images.forEach(img=>(img.tags||[]).forEach(t=>{counts[t]=(counts[t]||0)+1;}));
   const tags=Object.keys(counts);
   if(!tags.length){cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">タグなし</span>';return;}
-  // ソート
-  if(tagSort==='kana'){
-    tags.sort((a,b)=>kanaOrderKey(a).localeCompare(kanaOrderKey(b)));
-  }else{
-    tags.sort((a,b)=>a.localeCompare(b));
-  }
+  if(tagSort==='kana'){tags.sort((a,b)=>kanaOrderKey(a).localeCompare(kanaOrderKey(b)));}
+  else{tags.sort((a,b)=>a.localeCompare(b));}
   cloud.innerHTML=tags.map(t=>`<span class="tc-tag${activeTag===t?' active':''}" onclick="setActiveTag(${JSON.stringify(t)})">${escHtml(t)}<span class="tc-count">${counts[t]}</span></span>`).join('');
 }
 
-window.setTagSort=function(mode){
-  tagSort=mode;
-  document.getElementById('ts-alpha').classList.toggle('active',mode==='alpha');
-  document.getElementById('ts-kana').classList.toggle('active',mode==='kana');
-  renderTagCloud();
-};
+window.setTagSort=function(mode){tagSort=mode;document.getElementById('ts-alpha').classList.toggle('active',mode==='alpha');document.getElementById('ts-kana').classList.toggle('active',mode==='kana');renderTagCloud();};
 
 window.setActiveTag=function(tag){
   activeTag=activeTag===tag?null:tag;
   const bar=document.getElementById('active-tag-bar');
-  if(activeTag){
-    bar.classList.add('show');
-    document.getElementById('atb-label').textContent=`🏷 ${activeTag}`;
-  }else{
-    bar.classList.remove('show');
-  }
-  renderGallery();
-  closeSidebar();
+  if(activeTag){bar.classList.add('show');document.getElementById('atb-label').textContent=`🏷 ${activeTag}`;}
+  else{bar.classList.remove('show');}
+  renderGallery();closeSidebar();
 };
 
-window.clearActiveTag=function(){
-  activeTag=null;
-  document.getElementById('active-tag-bar').classList.remove('show');
-  renderGallery();
-};
+window.clearActiveTag=function(){activeTag=null;document.getElementById('active-tag-bar').classList.remove('show');renderGallery();};
 
 function updateStats(){
-  const safeCount=images.filter(i=>!i.nsfw).length;
-  const nsfwCount=images.filter(i=>i.nsfw).length;
+  const safeCount=images.filter(i=>!i.nsfw).length,nsfwCount=images.filter(i=>i.nsfw).length;
   document.getElementById('stat-total').textContent=images.length;
   document.getElementById('stat-fav').textContent=images.filter(i=>i.fav).length;
   document.getElementById('stat-nsfw').textContent=nsfwCount;
@@ -789,18 +869,14 @@ function formatSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixe
 window.toggleFav=async function(id,e){
   if(e)e.stopPropagation();
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
-  img.fav=!img.fav;
-  renderGallery();updateStats();
-  await updateImg(id,{fav:img.fav});
-  showToast(img.fav?'★ お気に入り追加':'☆ 解除');
+  img.fav=!img.fav;renderGallery();updateStats();
+  await updateImg(id,{fav:img.fav});showToast(img.fav?'★ お気に入り追加':'☆ 解除');
 };
 window.toggleNsfw=async function(id,e){
   if(e)e.stopPropagation();
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
-  img.nsfw=!img.nsfw;
-  renderGallery();updateStats();
-  await updateImg(id,{nsfw:img.nsfw});
-  showToast(img.nsfw?'🔞 NSFWマーク付けた':'✓ NSFWマーク外した');
+  img.nsfw=!img.nsfw;renderGallery();updateStats();
+  await updateImg(id,{nsfw:img.nsfw});showToast(img.nsfw?'🔞 NSFWマーク付けた':'✓ NSFWマーク外した');
 };
 window.confirmDelete=function(id,e){if(e)e.stopPropagation();document.getElementById(`dc-${id}`).classList.add('show');};
 window.cancelDelete=function(id){document.getElementById(`dc-${id}`).classList.remove('show');};
@@ -809,22 +885,114 @@ window.deleteImg=async function(id){
   images=images.filter(i=>i.firestoreId!==id);
   renderGallery();updateStats();
   await removeImg(id);
-  // Cloudinaryからも削除
   const pid=img?.publicId||extractPublicId(img?.url);
   if(pid){
-    try{
-      const r=await deleteFromCloudinary(pid);
-      showToast(r.result==='ok'?'🗑 削除完了（Cloudinaryも）':'🗑 Firestore削除済（Cloudinary確認を）');
-    }catch(e){showToast('🗑 Firestore削除済（Cloudinary失敗）');}
-  }else{
-    showToast('🗑 削除しました');
-  }
+    try{const r=await deleteFromCloudinary(pid);showToast(r.result==='ok'?'🗑 削除完了（Cloudinaryも）':'🗑 Firestore削除済（Cloudinary確認を）');}
+    catch(e){showToast('🗑 Firestore削除済（Cloudinary失敗）');}
+  }else{showToast('🗑 削除しました');}
 };
-window.setSort=function(mode,btn){sortMode=mode;document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGallery();};
+
+// ===== SORT (6 RND included) =====
+window.setSort=function(mode,btn){
+  if(mode==='rnd'){shuffleList();}
+  sortMode=mode;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGallery();
+};
+function shuffleList(){
+  shuffledList=[...images];
+  for(let i=shuffledList.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffledList[i],shuffledList[j]]=[shuffledList[j],shuffledList[i]];}
+}
+
 window.setTag=function(tag,el){filterTag=tag;document.querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderGallery();closeSidebar();};
 window.setView=function(mode){viewMode=mode;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));document.getElementById(`btn-${mode}`).classList.add('active');renderGallery();};
 
+// ===== MASONRY MODE (7) =====
+window.toggleMasonry=function(){
+  masonryMode=!masonryMode;
+  document.getElementById('btn-masonry').classList.toggle('active',masonryMode);
+  renderGallery();
+};
+
+// ===== SELECT MODE (2) =====
+window.toggleSelectMode=function(){
+  selectMode=!selectMode;
+  if(!selectMode){selectedIds.clear();}
+  document.getElementById('btn-select').classList.toggle('select-active',selectMode);
+  document.getElementById('select-bar').classList.toggle('show',selectMode);
+  renderGallery();updateSelCount();
+};
+window.exitSelectMode=function(){selectMode=false;selectedIds.clear();document.getElementById('btn-select').classList.remove('select-active');document.getElementById('select-bar').classList.remove('show');renderGallery();};
+window.toggleSelect=function(id,e){
+  if(e)e.stopPropagation();
+  if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);
+  const el=document.querySelector(`.gallery-item[data-id="${id}"]`);
+  if(el)el.classList.toggle('selected',selectedIds.has(id));
+  updateSelCount();
+};
+function updateSelCount(){document.getElementById('sel-count').textContent=`${selectedIds.size}件選択中`;}
+
+// Bulk FAV
+window.bulkFav=async function(){
+  if(!selectedIds.size)return;
+  const ids=[...selectedIds];
+  for(const id of ids){const img=images.find(i=>i.firestoreId===id);if(img&&!img.fav){img.fav=true;await updateImg(id,{fav:true});}}
+  updateStats();renderGallery();showToast(`★ ${ids.length}件をFAVにしました`);
+};
+// Bulk NSFW
+window.bulkNsfw=async function(){
+  if(!selectedIds.size)return;
+  const ids=[...selectedIds];
+  for(const id of ids){const img=images.find(i=>i.firestoreId===id);if(img){img.nsfw=!img.nsfw;await updateImg(id,{nsfw:img.nsfw});}}
+  updateStats();renderGallery();showToast(`🔞 ${ids.length}件のNSFWを切り替えました`);
+};
+// Bulk Delete
+window.bulkDelete=async function(){
+  if(!selectedIds.size)return;
+  if(!confirm(`${selectedIds.size}件を削除しますか？この操作は取り消せません。`))return;
+  const ids=[...selectedIds];selectedIds.clear();updateSelCount();
+  for(const id of ids){
+    const img=images.find(i=>i.firestoreId===id);
+    images=images.filter(i=>i.firestoreId!==id);
+    await removeImg(id);
+    const pid=img?.publicId||extractPublicId(img?.url);
+    if(pid){try{await deleteFromCloudinary(pid);}catch(_){}}
+  }
+  updateStats();renderGallery();showToast(`🗑 ${ids.length}件を削除しました`);
+};
+// Bulk Download (3)
+window.bulkDownload=async function(){
+  if(!selectedIds.size)return;
+  const ids=[...selectedIds];showToast(`⬇ ${ids.length}件ダウンロード中...`,4000);
+  for(const id of ids){
+    const img=images.find(i=>i.firestoreId===id);if(!img)continue;
+    await downloadFile(img.url,img.name);
+    await new Promise(r=>setTimeout(r,300));
+  }
+  showToast(`✓ ${ids.length}件ダウンロード完了`);
+};
+
+// ===== DOWNLOAD (3) =====
+async function downloadFile(url,name){
+  try{
+    const res=await fetch(url);const blob=await res.blob();
+    const ext=url.match(/\.([a-z]+)(\?|$)/i)?.[1]||'jpg';
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${name||'image'}.${ext}`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }catch(e){showToast('⚠ ダウンロード失敗');}
+}
+window.downloadCurrentImage=async function(){
+  if(!currentModalId)return;
+  const img=images.find(i=>i.firestoreId===currentModalId);if(!img)return;
+  showToast('⬇ ダウンロード中...');
+  await downloadFile(img.url,img.name);
+};
+
+// ===== MODAL NAV (1) =====
 window.openModal=function(id){
+  if(selectMode)return;
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
   currentModalId=id;
   resetZoom();
@@ -832,18 +1000,84 @@ window.openModal=function(id){
   document.getElementById('modal-img').className='modal-img';
   document.getElementById('modal-title').textContent=img.name;
   document.getElementById('modal-meta').textContent=formatDate(img.date)+(img.size?' · '+formatSize(img.size):'');
-  const mt=document.getElementById('modal-tags');
-  mt.innerHTML=(img.tags||[]).map(t=>`<span class="modal-tag" onclick="setActiveTag(${JSON.stringify(t)});closeModalDirect();">${escHtml(t)}</span>`).join('');
+  renderModalTags(img);
   const fb=document.getElementById('modal-fav-btn');fb.textContent=img.fav?'★':'☆';fb.classList.toggle('active',img.fav);
   document.getElementById('modal-nsfw-btn').classList.toggle('active',img.nsfw);
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow='hidden';document.body.classList.add('modal-open');
 };
+
+// ===== TAG EDIT (4) =====
+function renderModalTags(img){
+  const mt=document.getElementById('modal-tags');
+  const tags=img.tags||[];
+  mt.innerHTML=tags.map(t=>`<span class="modal-tag" onclick="setActiveTag(${JSON.stringify(t)});closeModalDirect();">${escHtml(t)}<button class="tag-del" onclick="removeModalTag(event,'${img.firestoreId}',${JSON.stringify(t)})">✕</button></span>`).join('');
+  mt.innerHTML+=`<button class="tag-add-btn" onclick="showTagInput(event,'${img.firestoreId}')">＋タグ追加</button>`;
+}
+window.removeModalTag=async function(e,id,tag){
+  e.stopPropagation();
+  const img=images.find(i=>i.firestoreId===id);if(!img)return;
+  img.tags=(img.tags||[]).filter(t=>t!==tag);
+  await updateImg(id,{tags:img.tags});
+  renderModalTags(img);renderTagCloud();showToast(`✕ タグ削除: ${tag}`);
+};
+window.showTagInput=function(e,id){
+  e.stopPropagation();
+  const mt=document.getElementById('modal-tags');
+  const inp=document.createElement('input');
+  inp.className='tag-add-input';inp.placeholder='タグ名...';
+  mt.appendChild(inp);inp.focus();
+  inp.addEventListener('keydown',async ev=>{
+    if(ev.key==='Enter'){
+      const t=inp.value.trim().replace(/ /g,'_');if(!t)return;
+      const img=images.find(i=>i.firestoreId===id);if(!img)return;
+      img.tags=[...(img.tags||[]).filter(x=>x!==t),t];
+      await updateImg(id,{tags:img.tags});
+      renderModalTags(img);renderTagCloud();showToast(`✓ タグ追加: ${t}`);
+    }
+    if(ev.key==='Escape'){inp.remove();}
+  });
+  inp.addEventListener('blur',()=>setTimeout(()=>inp.remove(),200));
+};
+
 window.toggleFavFromModal=function(){window.toggleFav(currentModalId,null);const img=images.find(i=>i.firestoreId===currentModalId);if(img){const b=document.getElementById('modal-fav-btn');b.textContent=img.fav?'★':'☆';b.classList.toggle('active',img.fav);}};
 window.toggleNsfwFromModal=function(){window.toggleNsfw(currentModalId,null);const img=images.find(i=>i.firestoreId===currentModalId);if(img)document.getElementById('modal-nsfw-btn').classList.toggle('active',img.nsfw);};
 window.closeModal=function(e){if(e.target===document.getElementById('modal'))closeModalDirect();};
 window.closeModalDirect=function(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';document.body.classList.remove('modal-open');currentModalId=null;resetZoom();};
-document.addEventListener('keydown',e=>{if(e.key==='Escape')window.closeModalDirect();});
+
+// Modal navigation (1)
+window.navigateModal=function(dir){
+  if(!currentModalId)return;
+  const idx=currentList.findIndex(i=>i.firestoreId===currentModalId);
+  if(idx===-1)return;
+  const next=(idx+dir+currentList.length)%currentList.length;
+  window.openModal(currentList[next].firestoreId);
+};
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')window.closeModalDirect();
+  const isOpen=document.getElementById('modal').classList.contains('open');
+  if(isOpen&&e.key==='ArrowLeft')window.navigateModal(-1);
+  if(isOpen&&e.key==='ArrowRight')window.navigateModal(1);
+});
+
+// ===== PINCH ZOOM state (declared early for resetZoom) =====
+let touchZoomScale=1,touchZoomDist=0,touchZoomActive=0;
+let touchPanX=0,touchPanY=0,touchPanStartX=0,touchPanStartY=0,isTouchPanning=false;
+
+// ===== SWIPE (1) =====
+let swipeStartX=0,swipeStartY=0;
+document.getElementById('modal-img-wrap').addEventListener('touchstart',e=>{
+  if(e.touches.length===1&&touchZoomActive===0){swipeStartX=e.touches[0].clientX;swipeStartY=e.touches[0].clientY;}
+},{passive:true});
+document.getElementById('modal-img-wrap').addEventListener('touchend',e=>{
+  if(touchZoomActive>0)return;
+  const dx=e.changedTouches[0].clientX-swipeStartX;
+  const dy=e.changedTouches[0].clientY-swipeStartY;
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
+    window.navigateModal(dx<0?1:-1);
+  }
+},{passive:true});
 
 // === PC ZOOM ===
 let zoomScale=1,zoomX=0,zoomY=0,isPanning=false,panStartX=0,panStartY=0;
@@ -855,6 +1089,7 @@ function applyZoom(){
 }
 function resetZoom(){
   zoomScale=1;zoomX=0;zoomY=0;isPanning=false;
+  touchZoomScale=1;touchZoomDist=0;touchZoomActive=0;
   const img=document.getElementById('modal-img');if(!img)return;
   img.style.transform='';img.style.cursor='';
   const lvl=document.getElementById('zoom-level');if(lvl)lvl.textContent='100%';
@@ -862,29 +1097,52 @@ function resetZoom(){
 window.resetZoomBtn=resetZoom;
 window.zoomIn=function(){zoomScale=Math.min(zoomScale*1.25,8);applyZoom();};
 window.zoomOut=function(){zoomScale=Math.max(zoomScale/1.25,1);if(zoomScale===1){zoomX=0;zoomY=0;}applyZoom();};
-// マウスホイールでズーム
 document.getElementById('modal-img').addEventListener('wheel',e=>{
   if(!document.getElementById('modal').classList.contains('open'))return;
-  e.preventDefault();
-  const delta=e.deltaY<0?1.12:1/1.12;
-  zoomScale=Math.min(Math.max(zoomScale*delta,1),8);
-  if(zoomScale===1){zoomX=0;zoomY=0;}
-  applyZoom();
+  e.preventDefault();const delta=e.deltaY<0?1.12:1/1.12;
+  zoomScale=Math.min(Math.max(zoomScale*delta,1),8);if(zoomScale===1){zoomX=0;zoomY=0;}applyZoom();
 },{passive:false});
-// ドラッグでパン
 document.getElementById('modal-img').addEventListener('mousedown',e=>{
-  if(zoomScale<=1)return;
-  isPanning=true;panStartX=e.clientX-zoomX;panStartY=e.clientY-zoomY;
-  document.getElementById('modal-img').style.cursor='grabbing';
-  e.preventDefault();
+  if(zoomScale<=1)return;isPanning=true;panStartX=e.clientX-zoomX;panStartY=e.clientY-zoomY;
+  document.getElementById('modal-img').style.cursor='grabbing';e.preventDefault();
 });
-document.addEventListener('mousemove',e=>{
-  if(!isPanning)return;
-  zoomX=e.clientX-panStartX;zoomY=e.clientY-panStartY;applyZoom();
-});
-document.addEventListener('mouseup',()=>{
-  if(isPanning){isPanning=false;if(zoomScale>1)document.getElementById('modal-img').style.cursor='grab';}
-});
+document.addEventListener('mousemove',e=>{if(!isPanning)return;zoomX=e.clientX-panStartX;zoomY=e.clientY-panStartY;applyZoom();});
+document.addEventListener('mouseup',()=>{if(isPanning){isPanning=false;if(zoomScale>1)document.getElementById('modal-img').style.cursor='grab';}});
+
+// ===== PINCH ZOOM (8) =====
+function getTouchDist(t){
+  const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+document.getElementById('modal-img-wrap').addEventListener('touchstart',e=>{
+  if(e.touches.length===2){
+    touchZoomActive=2;touchZoomDist=getTouchDist(e.touches);isTouchPanning=false;
+  }else if(e.touches.length===1&&zoomScale>1){
+    isTouchPanning=true;touchPanStartX=e.touches[0].clientX-zoomX;touchPanStartY=e.touches[0].clientY-zoomY;
+    touchZoomActive=0;
+  }else{touchZoomActive=0;}
+},{passive:true});
+document.getElementById('modal-img-wrap').addEventListener('touchmove',e=>{
+  if(e.touches.length===2&&touchZoomActive===2){
+    e.preventDefault();
+    const newDist=getTouchDist(e.touches);
+    if(touchZoomDist>0){
+      const ratio=newDist/touchZoomDist;
+      zoomScale=Math.min(Math.max(zoomScale*ratio,1),8);
+      touchZoomDist=newDist;
+      if(zoomScale===1){zoomX=0;zoomY=0;}
+      applyZoom();
+    }
+  }else if(e.touches.length===1&&isTouchPanning&&zoomScale>1){
+    e.preventDefault();
+    zoomX=e.touches[0].clientX-touchPanStartX;zoomY=e.touches[0].clientY-touchPanStartY;
+    applyZoom();
+  }
+},{passive:false});
+document.getElementById('modal-img-wrap').addEventListener('touchend',e=>{
+  if(e.touches.length<2){touchZoomActive=Math.max(0,e.touches.length);}
+  if(e.touches.length===0){isTouchPanning=false;}
+},{passive:true});
 
 function showToast(msg,d=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
 window.showToast=showToast;
