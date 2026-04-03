@@ -1068,10 +1068,14 @@ let touchPanX=0,touchPanY=0,touchPanStartX=0,touchPanStartY=0,isTouchPanning=fal
 // ===== SWIPE (1) =====
 let swipeStartX=0,swipeStartY=0;
 document.getElementById('modal-img-wrap').addEventListener('touchstart',e=>{
-  if(e.touches.length===1&&touchZoomActive===0){swipeStartX=e.touches[0].clientX;swipeStartY=e.touches[0].clientY;}
+  // ズーム中・パン中・ピンチ中はスワイプ開始座標を記録しない
+  if(e.touches.length===1&&touchZoomActive===0&&zoomScale<=1&&!isTouchPanning){
+    swipeStartX=e.touches[0].clientX;swipeStartY=e.touches[0].clientY;
+  }
 },{passive:true});
 document.getElementById('modal-img-wrap').addEventListener('touchend',e=>{
-  if(touchZoomActive>0)return;
+  // ズーム中・パン中・ピンチ中はスワイプナビを発火させない
+  if(touchZoomActive>0||isTouchPanning||zoomScale>1)return;
   const dx=e.changedTouches[0].clientX-swipeStartX;
   const dy=e.changedTouches[0].clientY-swipeStartY;
   if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
