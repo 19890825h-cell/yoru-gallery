@@ -161,7 +161,6 @@
   .modal-img-wrap{flex:1;overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center;background:var(--bg2);position:relative;z-index:1;}
   .modal-img-wrap::after{content:none !important;}
   .modal-img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
-  .swipe-hint{display:none;font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);text-align:center;padding:0.2rem;letter-spacing:0.08em;flex-shrink:0;}
   .modal-footer{padding:0.75rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;flex-shrink:0;background:var(--surface);padding-bottom:calc(0.75rem + env(safe-area-inset-bottom));}
   .modal-title{font-weight:700;font-size:0.85rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .modal-meta{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--muted);width:100%;order:3;}
@@ -190,7 +189,6 @@
     .gallery-grid.compact{grid-template-columns:repeat(4,1fr);}
     .gallery-grid.large{grid-template-columns:repeat(2,1fr);}
     .modal{border:none;}
-    .swipe-hint{display:block;}
     .logo-sub{display:none;}
     .action-btn{width:36px;height:36px;}
   }
@@ -225,6 +223,12 @@
     .gallery-grid.compact{grid-template-columns:repeat(3,1fr);}
     .count-badge{display:none;}
   }
+  /* ZOOM CONTROLS (PCのみ表示) */
+  .zoom-controls{position:absolute;bottom:0.6rem;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:0.2rem;background:rgba(5,5,8,0.85);border:1px solid var(--border);border-radius:3px;padding:0.2rem 0.5rem;backdrop-filter:blur(8px);z-index:5;user-select:none;}
+  .zoom-btn{background:none;border:none;color:var(--text);width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;border-radius:2px;transition:color 0.15s;line-height:1;}
+  .zoom-btn:hover{color:var(--accent2);}
+  .zoom-level{font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);min-width:2.8rem;text-align:center;}
+  @media(hover:hover) and (pointer:fine){.modal-overlay.open .zoom-controls{display:flex;}}
 </style>
 </head>
 <body>
@@ -372,8 +376,13 @@
     <button class="modal-close" onclick="closeModalDirect()">✕</button>
     <div class="modal-img-wrap">
       <img class="modal-img" id="modal-img" src="" alt="">
+      <div class="zoom-controls" id="zoom-controls">
+        <button class="zoom-btn" onclick="window.zoomOut()" title="縮小">－</button>
+        <span class="zoom-level" id="zoom-level">100%</span>
+        <button class="zoom-btn" onclick="window.zoomIn()" title="拡大">＋</button>
+        <button class="zoom-btn" onclick="window.resetZoomBtn()" title="リセット">⊙</button>
+      </div>
     </div>
-    <div class="swipe-hint">↓ スワイプで閉じる</div>
     <div class="modal-footer">
       <div class="modal-title" id="modal-title"></div>
       <button class="action-btn fav" id="modal-fav-btn" onclick="toggleFavFromModal()">☆</button>
@@ -818,6 +827,7 @@ window.setView=function(mode){viewMode=mode;document.querySelectorAll('.view-btn
 window.openModal=function(id){
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
   currentModalId=id;
+  resetZoom();
   document.getElementById('modal-img').src=img.url;
   document.getElementById('modal-img').className='modal-img';
   document.getElementById('modal-title').textContent=img.name;
@@ -832,13 +842,49 @@ window.openModal=function(id){
 window.toggleFavFromModal=function(){window.toggleFav(currentModalId,null);const img=images.find(i=>i.firestoreId===currentModalId);if(img){const b=document.getElementById('modal-fav-btn');b.textContent=img.fav?'★':'☆';b.classList.toggle('active',img.fav);}};
 window.toggleNsfwFromModal=function(){window.toggleNsfw(currentModalId,null);const img=images.find(i=>i.firestoreId===currentModalId);if(img)document.getElementById('modal-nsfw-btn').classList.toggle('active',img.nsfw);};
 window.closeModal=function(e){if(e.target===document.getElementById('modal'))closeModalDirect();};
-window.closeModalDirect=function(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';document.body.classList.remove('modal-open');currentModalId=null;};
+window.closeModalDirect=function(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';document.body.classList.remove('modal-open');currentModalId=null;resetZoom();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')window.closeModalDirect();});
 
-// スワイプで閉じる
-let ty=0;
-document.getElementById('modal-box').addEventListener('touchstart',e=>{ty=e.touches[0].clientY;},{passive:true});
-document.getElementById('modal-box').addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-ty>80)window.closeModalDirect();},{passive:true});
+// === PC ZOOM ===
+let zoomScale=1,zoomX=0,zoomY=0,isPanning=false,panStartX=0,panStartY=0;
+function applyZoom(){
+  const img=document.getElementById('modal-img');
+  img.style.transform=`translate(${zoomX}px,${zoomY}px) scale(${zoomScale})`;
+  img.style.cursor=zoomScale>1?(isPanning?'grabbing':'grab'):'default';
+  const lvl=document.getElementById('zoom-level');if(lvl)lvl.textContent=Math.round(zoomScale*100)+'%';
+}
+function resetZoom(){
+  zoomScale=1;zoomX=0;zoomY=0;isPanning=false;
+  const img=document.getElementById('modal-img');if(!img)return;
+  img.style.transform='';img.style.cursor='';
+  const lvl=document.getElementById('zoom-level');if(lvl)lvl.textContent='100%';
+}
+window.resetZoomBtn=resetZoom;
+window.zoomIn=function(){zoomScale=Math.min(zoomScale*1.25,8);applyZoom();};
+window.zoomOut=function(){zoomScale=Math.max(zoomScale/1.25,1);if(zoomScale===1){zoomX=0;zoomY=0;}applyZoom();};
+// マウスホイールでズーム
+document.getElementById('modal-img').addEventListener('wheel',e=>{
+  if(!document.getElementById('modal').classList.contains('open'))return;
+  e.preventDefault();
+  const delta=e.deltaY<0?1.12:1/1.12;
+  zoomScale=Math.min(Math.max(zoomScale*delta,1),8);
+  if(zoomScale===1){zoomX=0;zoomY=0;}
+  applyZoom();
+},{passive:false});
+// ドラッグでパン
+document.getElementById('modal-img').addEventListener('mousedown',e=>{
+  if(zoomScale<=1)return;
+  isPanning=true;panStartX=e.clientX-zoomX;panStartY=e.clientY-zoomY;
+  document.getElementById('modal-img').style.cursor='grabbing';
+  e.preventDefault();
+});
+document.addEventListener('mousemove',e=>{
+  if(!isPanning)return;
+  zoomX=e.clientX-panStartX;zoomY=e.clientY-panStartY;applyZoom();
+});
+document.addEventListener('mouseup',()=>{
+  if(isPanning){isPanning=false;if(zoomScale>1)document.getElementById('modal-img').style.cursor='grab';}
+});
 
 function showToast(msg,d=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
 window.showToast=showToast;
