@@ -278,6 +278,37 @@
     .gallery-grid{grid-template-columns:repeat(2,1fr);}
     .gallery-grid.compact{grid-template-columns:repeat(3,1fr);}
   }
+  /* FOCUS LAYOUT */
+  .focus-layout{display:none;}
+  .focus-layout.active{display:grid;grid-template-columns:1fr 140px;gap:2px;height:calc(100vh - var(--header-h) - 2rem);margin-bottom:1rem;}
+  .focus-main{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+  .focus-img-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:var(--bg2);position:relative;overflow:hidden;cursor:zoom-in;}
+  .focus-main-img{max-width:100%;max-height:100%;object-fit:contain;display:block;transition:opacity 0.15s;user-select:none;}
+  .focus-img-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(5,5,8,0.7);border:1px solid var(--border);color:var(--text);width:34px;height:54px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.4rem;border-radius:2px;z-index:5;transition:all 0.2s;backdrop-filter:blur(6px);touch-action:manipulation;line-height:1;}
+  .focus-img-nav:hover{border-color:var(--accent);color:var(--accent2);}
+  .focus-img-nav.prev{left:0.5rem;}
+  .focus-img-nav.next{right:0.5rem;}
+  .focus-info{padding:0.65rem 0.9rem;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .focus-info-title{font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.3rem;}
+  .focus-info-meta{font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);margin-bottom:0.45rem;}
+  .focus-info-actions{display:flex;gap:0.35rem;margin-bottom:0.45rem;flex-wrap:wrap;}
+  .focus-info-tags{display:flex;flex-wrap:wrap;gap:0.25rem;max-height:4rem;overflow-y:auto;}
+  .focus-strip{overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:2px;}
+  .focus-strip::-webkit-scrollbar{width:3px;}
+  .focus-strip::-webkit-scrollbar-thumb{background:var(--border);}
+  .focus-thumb{flex-shrink:0;aspect-ratio:3/4;overflow:hidden;cursor:pointer;position:relative;background:var(--surface);}
+  .focus-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:filter 0.2s;filter:brightness(0.55);}
+  .focus-thumb:hover img{filter:brightness(0.85);}
+  .focus-thumb.active img{filter:brightness(1);}
+  .focus-thumb.active{outline:2px solid var(--accent2);outline-offset:-2px;}
+  .focus-thumb.nsfw-blur img{filter:blur(8px) brightness(0.4);}
+  .focus-thumb.active.nsfw-blur img{filter:blur(8px) brightness(0.65);}
+  @media(max-width:768px){
+    .focus-layout.active{grid-template-columns:1fr;grid-template-rows:1fr 90px;height:calc(100vh - var(--header-h) - 0.5rem);}
+    .focus-strip{flex-direction:row;overflow-x:auto;overflow-y:hidden;}
+    .focus-thumb{flex-shrink:0;width:67px;height:90px;aspect-ratio:unset;}
+  }
+
   /* ZOOM CONTROLS (PCのみ表示) */
   .zoom-controls{position:absolute;bottom:0.6rem;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:0.2rem;background:rgba(5,5,8,0.85);border:1px solid var(--border);border-radius:3px;padding:0.2rem 0.5rem;backdrop-filter:blur(8px);z-index:5;user-select:none;}
   .zoom-btn{background:none;border:none;color:var(--text);width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;border-radius:2px;transition:color 0.15s;line-height:1;}
@@ -323,6 +354,7 @@
       <button class="view-btn active" id="btn-normal" onclick="setView('normal')">⊟</button>
       <button class="view-btn" id="btn-large" onclick="setView('large')">⊠</button>
       <button class="view-btn" id="btn-masonry" onclick="toggleMasonry()" title="本来の比率で表示">⊞N</button>
+      <button class="view-btn" id="btn-focus" onclick="toggleFocusView()" title="フォーカス表示">⊡</button>
     </div>
     <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
   </div>
@@ -375,6 +407,23 @@
       <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
         <span class="load-more-info" id="load-more-info"></span>
         <button class="load-more-btn" onclick="loadMoreImages()">さらに読み込む</button>
+      </div>
+      <!-- FOCUS LAYOUT -->
+      <div class="focus-layout" id="focus-layout">
+        <div class="focus-main">
+          <div class="focus-img-wrap" onclick="window.openModalFromFocus()">
+            <img class="focus-main-img" id="focus-main-img" src="" alt="">
+            <button class="focus-img-nav prev" onclick="event.stopPropagation();window.focusNavigate(-1)">‹</button>
+            <button class="focus-img-nav next" onclick="event.stopPropagation();window.focusNavigate(1)">›</button>
+          </div>
+          <div class="focus-info">
+            <div class="focus-info-title" id="focus-info-title">—</div>
+            <div class="focus-info-meta" id="focus-info-meta"></div>
+            <div class="focus-info-actions" id="focus-info-actions"></div>
+            <div class="focus-info-tags" id="focus-info-tags"></div>
+          </div>
+        </div>
+        <div class="focus-strip" id="focus-strip"></div>
       </div>
     </div>
     <div class="sidebar" id="sidebar">
@@ -552,6 +601,7 @@ let images=[],sortMode='new',filterTag='all',folderMode='safe',viewMode='normal'
 let activeTag=null,tagSort='alpha',masonryMode=false,quickFilter='all';
 let selectedIds=new Set(),selectMode=false;
 let shuffledList=[];
+let focusMode=false,focusIndex=0;
 // Pagination
 const PAGE_SIZE=50;
 let displayedCount=0;
@@ -727,6 +777,7 @@ window.setFolder=function(folder,el){
 
 // ===== PAGINATION (10) =====
 function renderGallery(reset){
+  if(focusMode){renderFocusLayout(getSorted());return;}
   const blurNsfw=document.getElementById('nsfw-blur-toggle').checked && folderMode!=='nsfw';
   const grid=document.getElementById('gallery');
   currentList=getSorted();
@@ -908,6 +959,73 @@ function shuffleList(){
 window.setTag=function(tag,el){filterTag=tag;document.querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderGallery();closeSidebar();};
 window.setView=function(mode){viewMode=mode;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));document.getElementById(`btn-${mode}`).classList.add('active');renderGallery();};
 
+// ===== FOCUS MODE =====
+window.toggleFocusView=function(){
+  focusMode=!focusMode;
+  document.getElementById('btn-focus').classList.toggle('active',focusMode);
+  const fl=document.getElementById('focus-layout');
+  const gg=document.getElementById('gallery');
+  const lmw=document.getElementById('load-more-wrap');
+  const sent=document.getElementById('load-more-sentinel');
+  if(focusMode){
+    fl.classList.add('active');
+    gg.style.display='none';
+    if(lmw)lmw.style.display='none';
+    if(sent)sent.style.display='none';
+    renderFocusLayout(getSorted());
+  }else{
+    fl.classList.remove('active');
+    gg.style.display='';
+    if(lmw)lmw.style.display='';
+    if(sent)sent.style.display='';
+    renderGallery();
+  }
+};
+
+function renderFocusLayout(list){
+  if(!list.length){
+    document.getElementById('focus-main-img').src='';
+    document.getElementById('focus-info-title').textContent='画像なし';
+    document.getElementById('focus-info-meta').textContent='';
+    document.getElementById('focus-info-actions').innerHTML='';
+    document.getElementById('focus-info-tags').innerHTML='';
+    document.getElementById('focus-strip').innerHTML='';
+    return;
+  }
+  focusIndex=Math.max(0,Math.min(focusIndex,list.length-1));
+  const blurNsfw=document.getElementById('nsfw-blur-toggle').checked&&folderMode!=='nsfw';
+  // サムネストリップ
+  const strip=document.getElementById('focus-strip');
+  strip.innerHTML=list.map((img,i)=>`<div class="focus-thumb${i===focusIndex?' active':''}${img.nsfw&&blurNsfw?' nsfw-blur':''}" onclick="window.focusSelect(${i})"><img src="${img.url}" alt="${escHtml(img.name)}" loading="lazy"></div>`).join('');
+  setTimeout(()=>{const t=strip.querySelector('.focus-thumb.active');if(t)t.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});},80);
+  // メイン画像
+  const img=list[focusIndex];
+  const mainImg=document.getElementById('focus-main-img');
+  if(mainImg.getAttribute('data-src')!==img.url){
+    mainImg.style.opacity='0';
+    setTimeout(()=>{mainImg.src=img.url;mainImg.setAttribute('data-src',img.url);mainImg.style.opacity='1';},120);
+  }
+  // 情報パネル
+  document.getElementById('focus-info-title').textContent=img.name||'—';
+  document.getElementById('focus-info-meta').textContent=
+    formatDate(img.date)+(img.size?' · '+formatSize(img.size):'')+(img.nsfw?' · 🔞':'')+` · ${focusIndex+1}/${list.length}`;
+  document.getElementById('focus-info-actions').innerHTML=`
+    <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)">${img.fav?'★':'☆'}</button>
+    <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)">🔞</button>
+    <button class="action-btn" onclick="downloadFile('${img.url}','${escHtml(img.name)}')" title="ダウンロード">⬇</button>
+    <button class="action-btn" onclick="openModal('${img.firestoreId}')" title="フルスクリーン">⤢</button>
+    <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)" title="削除">✕</button>
+  `;
+  document.getElementById('focus-info-tags').innerHTML=(img.tags||[]).map(t=>`<span class="modal-tag" onclick="setActiveTag(${JSON.stringify(t)})">${escHtml(t)}</span>`).join('');
+}
+
+window.focusSelect=function(idx){focusIndex=idx;if(focusMode)renderFocusLayout(getSorted());};
+window.focusNavigate=function(dir){
+  const list=getSorted();if(!list.length)return;
+  focusIndex=(focusIndex+dir+list.length)%list.length;renderFocusLayout(list);
+};
+window.openModalFromFocus=function(){const list=getSorted();if(list[focusIndex])openModal(list[focusIndex].firestoreId);};
+
 // ===== MASONRY MODE (7) =====
 window.toggleMasonry=function(){
   masonryMode=!masonryMode;
@@ -1059,6 +1177,8 @@ document.addEventListener('keydown',e=>{
   const isOpen=document.getElementById('modal').classList.contains('open');
   if(isOpen&&e.key==='ArrowLeft')window.navigateModal(-1);
   if(isOpen&&e.key==='ArrowRight')window.navigateModal(1);
+  if(!isOpen&&focusMode&&e.key==='ArrowLeft')window.focusNavigate(-1);
+  if(!isOpen&&focusMode&&e.key==='ArrowRight')window.focusNavigate(1);
 });
 
 // ===== PINCH ZOOM state (declared early for resetZoom) =====
