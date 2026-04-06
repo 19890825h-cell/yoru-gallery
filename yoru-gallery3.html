@@ -709,7 +709,7 @@ async function handleFiles(files){
       if(HF_TOKEN){
         le.textContent=`タグ付け中... ${done+1}/${files.length}`;
         try{
-          const tags=await tagWithWD14(url);
+          const tags=await tagWithWD14(file);
           if(tags.length){
             const autoMeta=buildAutoTaggingState(data,tags);
             await updateDoc(doc(db,COL,ref.id),{tags,nsfw:autoMeta.nsfw,...autoMeta.meta});
