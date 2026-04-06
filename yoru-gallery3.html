@@ -508,7 +508,7 @@
           <span style="color:var(--accent2);">🏷</span> HuggingFace WD14<br>
           <span style="font-size:0.58rem;">キャラクター認識＋タグ自動付与</span>
         </p>
-        <button onclick="setHfToken()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;cursor:pointer;border-radius:3px;letter-spacing:0.1em;">HFトークン設定</button>
+        <button onclick="setHfToken()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;cursor:pointer;border-radius:3px;letter-spacing:0.1em;">HFトークン設定（任意）</button>
         <button id="bulk-retag-btn" onclick="bulkRetagUntagged()" style="width:100%;margin-top:0.5rem;background:rgba(86,182,194,0.08);border:1px solid rgba(86,182,194,0.28);color:var(--cyan);padding:0.45rem;font-family:'Space Mono',monospace;font-size:0.58rem;cursor:pointer;border-radius:3px;letter-spacing:0.08em;">未タグ画像を一括タグ付け</button>
         <button id="bulk-retag-all-btn" onclick="bulkRetagAll()" style="width:100%;margin-top:0.5rem;background:rgba(123,94,167,0.08);border:1px solid rgba(198,120,221,0.28);color:var(--accent2);padding:0.45rem;font-family:'Space Mono',monospace;font-size:0.58rem;cursor:pointer;border-radius:3px;letter-spacing:0.08em;">全画像をやり直し</button>
         <button id="bulk-retag-cancel-btn" onclick="cancelBulkRetag()" style="width:100%;margin-top:0.5rem;background:rgba(224,108,138,0.08);border:1px solid rgba(224,108,138,0.28);color:var(--pink);padding:0.45rem;font-family:'Space Mono',monospace;font-size:0.58rem;cursor:pointer;border-radius:3px;letter-spacing:0.08em;display:none;">タグ付けを中止</button>
@@ -568,6 +568,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBk_QX3wMDEwT-GsyCww2kLg6nRUEvzj1w",
@@ -580,6 +581,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const functions = getFunctions(app);
 const COL = 'yoru-images';
 
 // Cloudinary
@@ -595,6 +597,8 @@ const WD14_CHARACTER_THRESHOLD = 0.85;
 const WD14_MAX_TAGS = 20;
 let wd14ClientPromise = null;
 let bulkRetagState = null;
+const cloudinaryDeleteCallable = httpsCallable(functions,'cloudinaryDeleteAsset');
+const hfTagCallable = httpsCallable(functions,'hfTagImage');
 
 // Password
 const DEFAULT_PW_HASH='8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
@@ -696,15 +700,13 @@ async function handleFiles(files){
       const url=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
       const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[],title_ja:'',caption_ja:'',dialogue_ja:'',nsfw_summary_ja:''};
       const ref=await addDoc(collection(db,COL),data);
-      if(HF_TOKEN){
-        le.textContent=`タグ付け中... ${done+1}/${files.length}`;
-        tagWithWD14(url).then(tags=>{
-          if(tags.length){
-            const meta=generateJapaneseMetadata({...data,tags});
-            updateDoc(doc(db,COL,ref.id),{tags,...meta});
-          }
-        }).catch(()=>{});
-      }
+      le.textContent=`タグ付け中... ${done+1}/${files.length}`;
+      tagWithWD14(url).then(tags=>{
+        if(tags.length){
+          const meta=generateJapaneseMetadata({...data,tags});
+          updateDoc(doc(db,COL,ref.id),{tags,...meta});
+        }
+      }).catch(()=>{});
     }catch(e){showToast(`⚠ ${file.name} 失敗`);}
     done++;
   }
@@ -1400,6 +1402,38 @@ async function tagWithWD14(imageUrl){
   }catch(err){console.warn('[YORU] WD14エラー:', err.message);return[];}
 }
 
+async function tagWithWd14Server(imageUrl){
+  const response = await hfTagCallable({ imageUrl });
+  const tags = Array.isArray(response?.data?.tags) ? response.data.tags : [];
+  if(!tags.length)throw new Error('サーバー側でタグを取得できませんでした');
+  return tags;
+}
+
+async function tagWithWD14(imageUrl){
+  let serverError=null;
+  try{
+    return await tagWithWd14Server(imageUrl);
+  }catch(err){
+    serverError=err;
+  }
+  if(!HF_TOKEN){
+    throw new Error(serverError?.message || 'HFトークン未設定、または Cloud Functions 未デプロイです');
+  }
+  const { handle_file } = await import('https://cdn.jsdelivr.net/npm/@gradio/client/+esm');
+  const client = await getWd14Client();
+  const result = await client.predict('/predict', {
+    image: handle_file(imageUrl),
+    model_repo: WD14_MODEL,
+    general_thresh: WD14_GENERAL_THRESHOLD,
+    general_mcut_enabled: false,
+    character_thresh: WD14_CHARACTER_THRESHOLD,
+    character_mcut_enabled: false
+  });
+  const tags = extractWd14TagsFromResult(result);
+  if(!tags.length)throw new Error('タグを取得できませんでした');
+  return tags;
+}
+
 window.setHfToken=function(){
   const v=prompt('HuggingFace APIトークンを入力（https://huggingface.co/settings/tokens）:',HF_TOKEN);
   if(v===null)return;HF_TOKEN=v.trim();localStorage.setItem('yoru-hf-token',HF_TOKEN);
@@ -1419,7 +1453,6 @@ function setBulkRetagUi(running,modeText){
 }
 
 async function runBulkRetag(targets,modeText){
-  if(!HF_TOKEN){showToast('⚠ HFトークン未設定（サイドバーから設定）');return;}
   if(bulkRetagState?.running){showToast('⚠ すでに一括タグ付け中です');return;}
   if(!targets.length){showToast(`✓ ${modeText}対象はありません`);return;}
   bulkRetagState = { running:true, cancelled:false, modeText };
@@ -1475,7 +1508,7 @@ window.cancelBulkRetag=function(){
 };
 
 window.retagFromModal=async function(){
-  if(!currentModalId)return;if(!HF_TOKEN){showToast('⚠ HFトークン未設定（サイドバーから設定）');return;}
+  if(!currentModalId)return;
   const img=images.find(i=>i.firestoreId===currentModalId);if(!img)return;
   const btn=document.getElementById('modal-retag-btn');btn.textContent='🔄';btn.disabled=true;
   try{
@@ -1504,9 +1537,9 @@ function uploadToCloudinary(file,onProgress){
   });
 }
 
-// 公開HTMLでは Cloudinary の secret を持てないため、リモート削除は無効化
 async function deleteFromCloudinary(publicId){
-  throw new Error('Cloudinary delete disabled on public client');
+  const response = await cloudinaryDeleteCallable({ publicId });
+  return response?.data || { ok:true };
 }
 
 function extractPublicId(url){
@@ -1666,7 +1699,7 @@ function buildItemHtml(img,blurNsfw){
       <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)">✕</button>
     </div>
     <div class="delete-confirm" id="dc-${img.firestoreId}">
-      <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--muted);">公開版では Firestore の記録だけ削除します</span></p>
+      <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--muted);">Functions 経由で Cloudinary と Firestore を削除します</span></p>
       <div class="btn-row"><button class="btn-confirm" onclick="deleteImg('${img.firestoreId}')">DELETE</button><button class="btn-cancel" onclick="cancelDelete('${img.firestoreId}')">CANCEL</button></div>
     </div>
   </div>`;
