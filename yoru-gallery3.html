@@ -32,8 +32,8 @@
   body.light-mode::after{background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.01) 2px,rgba(0,0,0,0.01) 4px);}
 
   /* PASSWORD */
-  #pw-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;padding:1rem;transition:opacity 0.5s,visibility 0.5s;}
-  #pw-screen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+  #pw-screen{display:none !important;}
+  #pw-screen.hidden{display:none !important;}
   .pw-box{background:var(--surface);border:1px solid var(--border);padding:2rem 1.5rem;width:100%;max-width:320px;position:relative;text-align:center;}
   .pw-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),var(--pink));}
   .pw-logo{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:0.15em;color:var(--accent2);text-shadow:0 0 20px var(--glow);animation:glitch 8s infinite;}
@@ -606,12 +606,14 @@ const hfTagCallable = httpsCallable(functions,'hfTagImage');
 
 // Password
 const DEFAULT_PW_HASH='8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+const AUTH_BYPASS = true;
 async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 function getHash(){return localStorage.getItem('yoru-pw-hash')||DEFAULT_PW_HASH;}
 
 function enterGalleryAfterAuth(){
   sessionStorage.setItem('yoru-auth','1');
-  document.getElementById('pw-screen').classList.add('hidden');
+  const pwScreen=document.getElementById('pw-screen');
+  if(pwScreen)pwScreen.classList.add('hidden');
   setLoading(true,'CONNECTING TO CLOUD...',30);
   try{
     loadImages();
@@ -623,6 +625,7 @@ function enterGalleryAfterAuth(){
 }
 
 window.checkPassword=async function(){
+  if(AUTH_BYPASS){enterGalleryAfterAuth();return;}
   const v=document.getElementById('pw-input').value;if(!v)return;
   if(await sha256(v)===getHash()){
     enterGalleryAfterAuth();
@@ -653,7 +656,7 @@ document.getElementById('pw-input').addEventListener('click',()=>{document.getEl
 document.getElementById('pw-input').focus();
 
 // Auto login
-if(sessionStorage.getItem('yoru-auth')==='1'){
+if(AUTH_BYPASS || sessionStorage.getItem('yoru-auth')==='1'){
   enterGalleryAfterAuth();
 }
 
