@@ -348,14 +348,14 @@
   <div class="pw-box">
     <div class="pw-logo">YORU<span>夜</span></div>
     <span class="pw-sub">AI ANIME GALLERY · PRIVATE</span>
-    <form onsubmit="submitPassword(event)">
+    <form id="pw-form">
       <input class="pw-input" type="password" id="pw-input" placeholder="PASSWORD" autocomplete="current-password" enterkeyhint="go">
       <button class="pw-btn" type="submit">ENTER</button>
     </form>
     <div class="pw-error" id="pw-error"></div>
     <div class="pw-change-wrap">
       <span class="pw-change-label">CHANGE PASSWORD</span>
-      <form onsubmit="submitPasswordChange(event)">
+      <form id="pw-change-form">
         <input class="pw-input" type="password" id="pw-new" placeholder="NEW PASSWORD" autocomplete="new-password" style="margin-bottom:0.5rem;" enterkeyhint="done">
         <button class="pw-btn" type="submit" style="font-size:0.65rem;padding:0.6rem;">SET NEW PASSWORD</button>
       </form>
@@ -634,8 +634,12 @@ window.submitPasswordChange=function(event){
   if(event)event.preventDefault();
   window.changePassword();
 };
+document.getElementById('pw-form').addEventListener('submit',window.submitPassword);
+document.getElementById('pw-change-form').addEventListener('submit',window.submitPasswordChange);
 document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();window.checkPassword();}});
 document.getElementById('pw-new').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();window.changePassword();}});
+document.getElementById('pw-input').addEventListener('click',()=>{document.getElementById('pw-error').textContent='';});
+document.getElementById('pw-input').focus();
 
 // Auto login
 if(sessionStorage.getItem('yoru-auth')==='1'){
