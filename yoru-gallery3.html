@@ -680,6 +680,8 @@ let activeWork=null;
 let selectedIds=new Set(),selectMode=false;
 let shuffledList=[];
 let focusMode=false,focusIndex=0;
+let initialCloudLoadDone=false;
+let imageUnsubscribe=null;
 // Pagination
 const PAGE_SIZE=50;
 let displayedCount=0;
@@ -688,11 +690,22 @@ let currentList=[];
 // ===== リアルタイム同期（onSnapshot） =====
 function loadImages(){
   try{
+    if(imageUnsubscribe)return;
+    initialCloudLoadDone=false;
     setLoading(true,'CONNECTING TO CLOUD...',30);
+    const loadingFallback=setTimeout(()=>{
+      if(initialCloudLoadDone)return;
+      setLoading(false);
+      renderGallery();
+      updateStats();
+      showToast('⚠ クラウド接続待機中です。UIだけ先に表示しています',3500);
+    },4000);
     const q=query(collection(db,COL),orderBy('date','desc'));
-    onSnapshot(
+    imageUnsubscribe=onSnapshot(
       q,
       (snap)=>{
+        initialCloudLoadDone=true;
+        clearTimeout(loadingFallback);
         images=snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
         setLoading(true,'LIVE SYNC ACTIVE',100);
         setTimeout(()=>setLoading(false),600);
@@ -700,9 +713,14 @@ function loadImages(){
         updateStats();
       },
       (e)=>{
+        initialCloudLoadDone=true;
+        clearTimeout(loadingFallback);
         console.error(e);
+        imageUnsubscribe=null;
         setLoading(true,'CONNECTION ERROR',100);
         setTimeout(()=>setLoading(false),1000);
+        renderGallery();
+        updateStats();
         showToast('⚠ Firestore接続エラー');
       }
     );
