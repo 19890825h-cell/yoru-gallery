@@ -609,12 +609,23 @@ const DEFAULT_PW_HASH='8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab
 async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 function getHash(){return localStorage.getItem('yoru-pw-hash')||DEFAULT_PW_HASH;}
 
+function enterGalleryAfterAuth(){
+  sessionStorage.setItem('yoru-auth','1');
+  document.getElementById('pw-screen').classList.add('hidden');
+  setLoading(true,'CONNECTING TO CLOUD...',30);
+  try{
+    loadImages();
+  }catch(e){
+    console.error(e);
+    setLoading(false);
+    showToast('⚠ ギャラリーの初期化に失敗しました');
+  }
+}
+
 window.checkPassword=async function(){
   const v=document.getElementById('pw-input').value;if(!v)return;
   if(await sha256(v)===getHash()){
-    sessionStorage.setItem('yoru-auth','1');
-    document.getElementById('pw-screen').classList.add('hidden');
-    loadImages();
+    enterGalleryAfterAuth();
   }else{
     document.getElementById('pw-error').textContent='— INCORRECT —';
     document.getElementById('pw-input').value='';
@@ -643,8 +654,7 @@ document.getElementById('pw-input').focus();
 
 // Auto login
 if(sessionStorage.getItem('yoru-auth')==='1'){
-  document.getElementById('pw-screen').classList.add('hidden');
-  loadImages();
+  enterGalleryAfterAuth();
 }
 
 // ===== THEME (9) =====
@@ -674,24 +684,30 @@ let currentList=[];
 
 // ===== リアルタイム同期（onSnapshot） =====
 function loadImages(){
-  setLoading(true,'CONNECTING TO CLOUD...',30);
-  const q=query(collection(db,COL),orderBy('date','desc'));
-  onSnapshot(
-    q,
-    (snap)=>{
-      images=snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
-      setLoading(true,'LIVE SYNC ACTIVE',100);
-      setTimeout(()=>setLoading(false),600);
-      renderGallery();
-      updateStats();
-    },
-    (e)=>{
-      console.error(e);
-      setLoading(true,'CONNECTION ERROR',100);
-      setTimeout(()=>setLoading(false),1000);
-      showToast('⚠ Firestore接続エラー');
-    }
-  );
+  try{
+    setLoading(true,'CONNECTING TO CLOUD...',30);
+    const q=query(collection(db,COL),orderBy('date','desc'));
+    onSnapshot(
+      q,
+      (snap)=>{
+        images=snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
+        setLoading(true,'LIVE SYNC ACTIVE',100);
+        setTimeout(()=>setLoading(false),600);
+        renderGallery();
+        updateStats();
+      },
+      (e)=>{
+        console.error(e);
+        setLoading(true,'CONNECTION ERROR',100);
+        setTimeout(()=>setLoading(false),1000);
+        showToast('⚠ Firestore接続エラー');
+      }
+    );
+  }catch(e){
+    console.error(e);
+    setLoading(false);
+    showToast('⚠ ギャラリー読み込みに失敗しました');
+  }
 }
 
 function setLoading(show,text,pct){
