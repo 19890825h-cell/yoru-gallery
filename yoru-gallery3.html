@@ -710,8 +710,8 @@ async function handleFiles(files){
         le.textContent=`タグ付け中... ${done+1}/${files.length}`;
         tagWithWD14(url).then(tags=>{
           if(tags.length){
-            const meta=generateJapaneseMetadata({...data,tags});
-            updateDoc(doc(db,COL,ref.id),{tags,...meta});
+            const autoMeta=buildAutoTaggingState(data,tags);
+            updateDoc(doc(db,COL,ref.id),{tags,nsfw:autoMeta.nsfw,...autoMeta.meta});
           }
         }).catch(()=>{});
       }
@@ -1339,6 +1339,35 @@ function getDisplayMetadata(image){
   };
 }
 
+const AUTO_NSFW_HARD_TAGS = [
+  'nsfw','explicit','questionable','sensitive',
+  'sex','vaginal','missionary','cowgirl_position','squatting_cowgirl_position','straddling',
+  'penis','pussy','nipples','anus','spread_pussy','spread_anus','urethra','uterus','testicles',
+  'cum','cum_in_pussy','internal_cumshot','ejaculation','cumdrip','after_sex','after_vaginal',
+  'pubic_hair','male_pubic_hair','female_pubic_hair','nude','completely_nude','topless','bottomless',
+  'clitoris','clitoral_hood','panty_pull','panties_around_one_leg','public_indecency',
+  'uncensored','mosaic_censoring','bar_censor','pointless_censoring','x-ray','cross-section'
+];
+
+const AUTO_NSFW_SOFT_TAGS = [
+  'underwear','panties','bra','lingerie','breasts','large_breasts','huge_breasts','cleavage',
+  'underboob','sideboob','midriff','navel','ass','thighs','groin','skimpy','revealing_clothes',
+  'sexually_suggestive','presenting','spread_legs','kiss','french_kiss','bed','on_bed'
+];
+
+function inferNsfwFromTags(tags){
+  const normalized=(tags||[]).map(normalizeWd14Tag).filter(Boolean);
+  if(!normalized.length)return false;
+  if(normalized.some(tag=>AUTO_NSFW_HARD_TAGS.includes(tag)))return true;
+  return normalized.filter(tag=>AUTO_NSFW_SOFT_TAGS.includes(tag)).length >= 2;
+}
+
+function buildAutoTaggingState(image,tags){
+  const nsfw=inferNsfwFromTags(tags);
+  const meta=generateJapaneseMetadata({...image,tags,nsfw});
+  return { nsfw, meta };
+}
+
 function hashText(text){
   const value=String(text||'');
   let h=0;
@@ -1446,9 +1475,10 @@ async function runBulkRetag(targets,modeText){
       const tags=await tagWithWD14(img.url);
       if(tags.length){
         img.tags=tags;
-        const meta=generateJapaneseMetadata(img);
-        Object.assign(img,meta);
-        await updateImg(img.firestoreId,{tags,...meta});
+        const autoMeta=buildAutoTaggingState(img,tags);
+        img.nsfw=autoMeta.nsfw;
+        Object.assign(img,autoMeta.meta);
+        await updateImg(img.firestoreId,{tags,nsfw:img.nsfw,...autoMeta.meta});
         success++;
       }else{
         failed++;
@@ -1492,9 +1522,10 @@ window.retagFromModal=async function(){
     showToast('🏷 タグ付け中...',5000);
     const tags=await tagWithWD14(img.url);
     img.tags=tags;
-    const meta=generateJapaneseMetadata(img);
-    Object.assign(img,meta);
-    await updateImg(currentModalId,{tags,...meta});
+    const autoMeta=buildAutoTaggingState(img,tags);
+    img.nsfw=autoMeta.nsfw;
+    Object.assign(img,autoMeta.meta);
+    await updateImg(currentModalId,{tags,nsfw:img.nsfw,...autoMeta.meta});
     renderModalTags(img);
     showToast(`✓ ${tags.length}個のタグを付けました`);
   }catch(e){showToast(`⚠ タグ付け失敗: ${e.message}`);}
@@ -2043,8 +2074,10 @@ window.removeModalTag=async function(e,id,tag){
   e.stopPropagation();
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
   img.tags=(img.tags||[]).filter(t=>t!==tag);
-  Object.assign(img,generateJapaneseMetadata(img));
-  await updateImg(id,{tags:img.tags,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
+  const autoMeta=buildAutoTaggingState(img,img.tags);
+  img.nsfw=autoMeta.nsfw;
+  Object.assign(img,autoMeta.meta);
+  await updateImg(id,{tags:img.tags,nsfw:img.nsfw,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
   renderModalTags(img);renderTagCloud();showToast(`✕ タグ削除: ${tag}`);
 };
 window.showTagInput=function(e,id){
@@ -2058,8 +2091,10 @@ window.showTagInput=function(e,id){
       const t=inp.value.trim().replace(/ /g,'_');if(!t)return;
       const img=images.find(i=>i.firestoreId===id);if(!img)return;
       img.tags=[...(img.tags||[]).filter(x=>x!==t),t];
-      Object.assign(img,generateJapaneseMetadata(img));
-      await updateImg(id,{tags:img.tags,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
+      const autoMeta=buildAutoTaggingState(img,img.tags);
+      img.nsfw=autoMeta.nsfw;
+      Object.assign(img,autoMeta.meta);
+      await updateImg(id,{tags:img.tags,nsfw:img.nsfw,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
       renderModalTags(img);renderTagCloud();showToast(`✓ タグ追加: ${t}`);
     }
     if(ev.key==='Escape'){inp.remove();}
