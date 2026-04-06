@@ -348,13 +348,17 @@
   <div class="pw-box">
     <div class="pw-logo">YORU<span>夜</span></div>
     <span class="pw-sub">AI ANIME GALLERY · PRIVATE</span>
-    <input class="pw-input" type="password" id="pw-input" placeholder="PASSWORD" autocomplete="current-password">
-    <button class="pw-btn" onclick="checkPassword()">ENTER</button>
+    <form onsubmit="submitPassword(event)">
+      <input class="pw-input" type="password" id="pw-input" placeholder="PASSWORD" autocomplete="current-password" enterkeyhint="go">
+      <button class="pw-btn" type="submit">ENTER</button>
+    </form>
     <div class="pw-error" id="pw-error"></div>
     <div class="pw-change-wrap">
       <span class="pw-change-label">CHANGE PASSWORD</span>
-      <input class="pw-input" type="password" id="pw-new" placeholder="NEW PASSWORD" autocomplete="new-password" style="margin-bottom:0.5rem;">
-      <button class="pw-btn" onclick="changePassword()" style="font-size:0.65rem;padding:0.6rem;">SET NEW PASSWORD</button>
+      <form onsubmit="submitPasswordChange(event)">
+        <input class="pw-input" type="password" id="pw-new" placeholder="NEW PASSWORD" autocomplete="new-password" style="margin-bottom:0.5rem;" enterkeyhint="done">
+        <button class="pw-btn" type="submit" style="font-size:0.65rem;padding:0.6rem;">SET NEW PASSWORD</button>
+      </form>
     </div>
   </div>
 </div>
@@ -622,7 +626,16 @@ window.changePassword=async function(){
   localStorage.setItem('yoru-pw-hash',await sha256(v));
   document.getElementById('pw-new').value='';showToast('✓ パスワード変更完了');
 };
-document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')window.checkPassword();});
+window.submitPassword=function(event){
+  if(event)event.preventDefault();
+  window.checkPassword();
+};
+window.submitPasswordChange=function(event){
+  if(event)event.preventDefault();
+  window.changePassword();
+};
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();window.checkPassword();}});
+document.getElementById('pw-new').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();window.changePassword();}});
 
 // Auto login
 if(sessionStorage.getItem('yoru-auth')==='1'){
