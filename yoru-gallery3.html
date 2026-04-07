@@ -60,6 +60,7 @@
   /* HEADER */
   header{position:sticky;top:0;z-index:100;background:rgba(5,5,8,0.78);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:var(--header-h);gap:0.75rem;box-shadow:0 10px 40px rgba(0,0,0,0.18);}
   body.light-mode header{background:rgba(245,245,248,0.92);}
+  body.booting header{opacity:0;transform:translateY(-12px);animation:bootHeaderIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.08s forwards;}
   .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.12em;color:var(--accent2);text-shadow:0 0 15px var(--glow);animation:glitch 8s infinite;line-height:1;flex-shrink:0;}
   .logo span{color:var(--cyan);}
   .logo-sub{font-family:'Space Mono',monospace;font-size:0.45rem;color:var(--muted);letter-spacing:0.2em;display:block;margin-top:-3px;}
@@ -92,6 +93,7 @@
 
   /* LAYOUT */
   .container{max-width:1440px;margin:0 auto;padding:1.25rem;}
+  body.booting .top-section{opacity:0;transform:translateY(18px);animation:bootSectionIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.18s forwards;}
   .top-section{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1.5rem;margin-bottom:2rem;align-items:start;}
   .gallery-header{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding:0.95rem 1rem;flex-wrap:wrap;background:rgba(15,15,26,0.72);border:1px solid rgba(255,255,255,0.05);border-radius:var(--radius-md);box-shadow:var(--card-shadow);}
   .gallery-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.1em;}
@@ -132,6 +134,7 @@
   .gallery-item{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--surface);cursor:pointer;border-radius:18px;border:1px solid rgba(255,255,255,0.05);box-shadow:var(--card-shadow);}
   .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s ease,filter 0.3s;filter:brightness(0.9) saturate(0.95);}
   .gallery-item:hover img{transform:scale(1.06);filter:brightness(1) saturate(1.1);}
+  body.booting .gallery-item{opacity:0;transform:translateY(14px) scale(0.985);animation:bootCardIn 0.55s cubic-bezier(0.22,1,0.36,1) forwards;animation-delay:var(--enter-delay,0ms);}
   .gallery-item.is-new{animation:newItemIn 0.65s cubic-bezier(0.22,1,0.36,1),outerOrbitGlow 2.4s linear infinite;}
   .gallery-item.is-new::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(111,251,255,0.2),rgba(198,120,221,0.18));opacity:0;animation:newItemFlash 0.75s ease;pointer-events:none;z-index:1;}
   .gallery-item.is-new{box-shadow:0 0 0 1px rgba(111,251,255,0.42),0 0 18px rgba(111,251,255,0.16),0 0 28px rgba(198,120,221,0.12),var(--card-shadow);}
@@ -250,6 +253,9 @@
   @keyframes glitch{0%,96%,100%{text-shadow:0 0 20px var(--glow),0 0 40px var(--glow);}2%{text-shadow:3px 0 15px rgba(86,182,194,0.5),-3px 0 15px rgba(224,108,138,0.5);}98%{text-shadow:-3px 0 15px rgba(86,182,194,0.5),3px 0 15px rgba(224,108,138,0.5);}}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
   @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes bootHeaderIn{to{opacity:1;transform:translateY(0);}}
+  @keyframes bootSectionIn{to{opacity:1;transform:translateY(0);}}
+  @keyframes bootCardIn{to{opacity:1;transform:translateY(0) scale(1);}}
   @keyframes newItemIn{0%{opacity:0;transform:translateY(18px) scale(0.96);}100%{opacity:1;transform:translateY(0) scale(1);}}
   @keyframes newItemFlash{0%{opacity:0.9;}100%{opacity:0;}}
   @keyframes newBadgePulse{0%,100%{transform:scale(1);opacity:0.95;}50%{transform:scale(1.08);opacity:1;}}
@@ -372,7 +378,7 @@
   @media(hover:hover) and (pointer:fine){.modal-overlay.open .zoom-controls{display:flex;}}
 </style>
 </head>
-<body>
+<body class="booting">
 
 <!-- PASSWORD -->
 <div id="pw-screen">
@@ -616,6 +622,7 @@ const db = getFirestore(app);
 const COL = 'yoru-images';
 const APP_VERSION = 'v1.8.0';
 document.getElementById('version-badge').textContent = APP_VERSION;
+setTimeout(()=>document.body.classList.remove('booting'),1400);
 
 // Cloudinary
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
@@ -1750,7 +1757,7 @@ function renderGallery(reset){
   }
   const toShow=currentList.slice(0,PAGE_SIZE);
   displayedCount=toShow.length;
-  grid.innerHTML=toShow.map(img=>buildItemHtml(img,blurNsfw)).join('');
+  grid.innerHTML=toShow.map((img,index)=>buildItemHtml(img,blurNsfw,index)).join('');
   updateLoadMore();
   document.getElementById('header-count').textContent=images.length;
   renderTagCloud();
@@ -1761,8 +1768,8 @@ window.loadMoreImages=function(){
   const grid=document.getElementById('gallery');
   const nextBatch=currentList.slice(displayedCount,displayedCount+PAGE_SIZE);
   if(!nextBatch.length)return;
-  nextBatch.forEach(img=>{
-    const div=document.createElement('div');div.innerHTML=buildItemHtml(img,blurNsfw);
+  nextBatch.forEach((img,index)=>{
+    const div=document.createElement('div');div.innerHTML=buildItemHtml(img,blurNsfw,displayedCount+index);
     grid.appendChild(div.firstElementChild);
   });
   displayedCount+=nextBatch.length;
@@ -1790,9 +1797,10 @@ if('IntersectionObserver' in window){
   io.observe(sentinel);
 }
 
-function buildItemHtml(img,blurNsfw){
+function buildItemHtml(img,blurNsfw,index=0){
   const bl=img.nsfw&&blurNsfw;
   const newCls=recentlyAddedIds.has(img.firestoreId)?' is-new':'';
+  const enterDelay=Math.min(index,11)*45;
   const newBadge=recentlyAddedIds.has(img.firestoreId)?'<span class="new-badge">NEW</span>':'';
   const newRing=recentlyAddedIds.has(img.firestoreId)?`<span class="new-ring" aria-hidden="true">
     <svg viewBox="0 0 100 132" preserveAspectRatio="none">
@@ -1817,7 +1825,7 @@ function buildItemHtml(img,blurNsfw){
   const displayTitle=display.title_ja||img.name;
   const displayMeta=(display.caption_ja||formatDate(img.date)).slice(0,70);
   if(selectMode){
-    return `<div class="gallery-item${bl?' nsfw-blur':''}${newCls} ${sel}" data-id="${img.firestoreId}" data-nsfw="${img.nsfw?'true':'false'}" onclick="toggleSelect('${img.firestoreId}',event)">
+    return `<div class="gallery-item${bl?' nsfw-blur':''}${newCls} ${sel}" style="--enter-delay:${enterDelay}ms" data-id="${img.firestoreId}" data-nsfw="${img.nsfw?'true':'false'}" onclick="toggleSelect('${img.firestoreId}',event)">
       ${newBadge}${newRing}
       ${img.nsfw?'<div class="nsfw-badge">NSFW</div>':''}
       <img src="${img.url}" alt="${img.name}" loading="lazy">
@@ -1828,7 +1836,7 @@ function buildItemHtml(img,blurNsfw){
       </div>
     </div>`;
   }
-  return `<div class="gallery-item${bl?' nsfw-blur':''}${newCls}" data-id="${img.firestoreId}" data-nsfw="${img.nsfw?'true':'false'}">
+  return `<div class="gallery-item${bl?' nsfw-blur':''}${newCls}" style="--enter-delay:${enterDelay}ms" data-id="${img.firestoreId}" data-nsfw="${img.nsfw?'true':'false'}">
     ${newBadge}${newRing}
     ${img.nsfw?'<div class="nsfw-badge">NSFW</div>':''}
     <img src="${img.url}" alt="${img.name}" loading="lazy" onclick="openModal('${img.firestoreId}')">
