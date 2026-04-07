@@ -66,6 +66,7 @@
   .header-right{display:flex;align-items:center;gap:0.5rem;flex-shrink:0;background:rgba(15,15,26,0.72);border:1px solid rgba(255,255,255,0.05);padding:0.35rem 0.45rem;border-radius:999px;box-shadow:var(--card-shadow);}
   .count-badge{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);white-space:nowrap;}
   .count-badge span{color:var(--accent2);}
+  .version-badge{font-family:'Space Mono',monospace;font-size:0.52rem;color:var(--cyan);border:1px solid rgba(111,251,255,0.28);background:rgba(86,182,194,0.08);padding:0.14rem 0.42rem;border-radius:999px;letter-spacing:0.12em;white-space:nowrap;}
   .pulse-dot{display:inline-block;width:5px;height:5px;background:var(--cyan);border-radius:50%;margin-right:0.4rem;animation:pulse 2s infinite;}
   .live-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--cyan);border:1px solid var(--cyan);padding:0.1rem 0.35rem;border-radius:2px;margin-left:0.4rem;letter-spacing:0.1em;opacity:0.8;}
   .view-toggle{display:flex;gap:0.2rem;}
@@ -284,6 +285,9 @@
     .gallery-grid{grid-template-columns:repeat(2,1fr);gap:0.6rem;}
     .gallery-grid.compact{grid-template-columns:repeat(4,1fr);}
     .gallery-grid.large{grid-template-columns:repeat(2,1fr);}
+    .new-badge{top:0.42rem;left:0.42rem;font-size:0.42rem;padding:0.12rem 0.32rem;letter-spacing:0.12em;}
+    .gallery-item.is-new{box-shadow:0 0 0 1px rgba(111,251,255,0.34),0 0 14px rgba(111,251,255,0.12),0 0 22px rgba(198,120,221,0.1),var(--card-shadow);}
+    .gallery-item.is-new[data-nsfw="true"]{box-shadow:0 0 0 1px rgba(224,108,138,0.34),0 0 14px rgba(224,108,138,0.12),0 0 22px rgba(147,68,184,0.1),var(--card-shadow);}
     .modal{border:none;}
     .modal-footer{padding:0.55rem 0.75rem;justify-content:flex-end;}
     .modal-title,.modal-meta,.modal-dialogue,.modal-tags{display:none !important;}
@@ -291,6 +295,7 @@
     .action-btn{width:36px;height:36px;}
     .modal-nav{width:34px;height:50px;font-size:1rem;}
     .count-badge{display:none;}
+    .version-badge{font-size:0.48rem;padding:0.12rem 0.36rem;}
   }
   /* TAG BROWSER */
   .tag-sort-btns{display:flex;gap:0.25rem;}
@@ -397,6 +402,7 @@
   <div class="logo">YORU<span>夜</span><span class="logo-sub">AI ANIME GALLERY</span></div>
   <div class="header-right">
     <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> IMAGES<span class="live-badge">LIVE</span></span>
+    <span class="version-badge" id="version-badge">v?.?.?</span>
     <button class="hdr-btn" id="btn-theme" onclick="toggleTheme()" title="ライト/ダーク切替">🌙</button>
     <button class="hdr-btn" id="btn-select" onclick="toggleSelectMode()" title="一括選択モード">SELECT</button>
     <div class="view-toggle">
@@ -608,6 +614,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const COL = 'yoru-images';
+const APP_VERSION = 'v1.8.0';
+document.getElementById('version-badge').textContent = APP_VERSION;
 
 // Cloudinary
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
@@ -2254,6 +2262,7 @@ document.addEventListener('keydown',e=>{
 // ===== PINCH ZOOM state (declared early for resetZoom) =====
 let touchZoomScale=1,touchZoomDist=0,touchZoomActive=0;
 let touchPanX=0,touchPanY=0,touchPanStartX=0,touchPanStartY=0,isTouchPanning=false;
+let touchMidX=0,touchMidY=0;
 
 // ===== SWIPE (1) =====
 let swipeStartX=0,swipeStartY=0;
@@ -2308,9 +2317,16 @@ function getTouchDist(t){
   const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
   return Math.sqrt(dx*dx+dy*dy);
 }
+function getTouchMidpoint(t){
+  return {
+    x:(t[0].clientX+t[1].clientX)/2,
+    y:(t[0].clientY+t[1].clientY)/2
+  };
+}
 document.getElementById('modal-img-wrap').addEventListener('touchstart',e=>{
   if(e.touches.length===2){
-    touchZoomActive=2;touchZoomDist=getTouchDist(e.touches);isTouchPanning=false;
+    const mid=getTouchMidpoint(e.touches);
+    touchZoomActive=2;touchZoomDist=getTouchDist(e.touches);touchMidX=mid.x;touchMidY=mid.y;isTouchPanning=false;
   }else if(e.touches.length===1&&zoomScale>1){
     isTouchPanning=true;touchPanStartX=e.touches[0].clientX-zoomX;touchPanStartY=e.touches[0].clientY-zoomY;
     touchZoomActive=0;
@@ -2321,9 +2337,22 @@ document.getElementById('modal-img-wrap').addEventListener('touchmove',e=>{
     e.preventDefault();
     const newDist=getTouchDist(e.touches);
     if(touchZoomDist>0){
+      const mid=getTouchMidpoint(e.touches);
+      const wrapRect=document.getElementById('modal-img-wrap').getBoundingClientRect();
+      const centerX=wrapRect.left + wrapRect.width/2;
+      const centerY=wrapRect.top + wrapRect.height/2;
       const ratio=newDist/touchZoomDist;
-      zoomScale=Math.min(Math.max(zoomScale*ratio,1),8);
+      const nextScale=Math.min(Math.max(zoomScale*ratio,1),8);
+      const scaleFactor=nextScale/zoomScale;
+      zoomX += mid.x-touchMidX;
+      zoomY += mid.y-touchMidY;
+      const originX=mid.x-centerX;
+      const originY=mid.y-centerY;
+      zoomX = originX - (originX - zoomX) * scaleFactor;
+      zoomY = originY - (originY - zoomY) * scaleFactor;
+      zoomScale=nextScale;
       touchZoomDist=newDist;
+      touchMidX=mid.x;touchMidY=mid.y;
       if(zoomScale===1){zoomX=0;zoomY=0;}
       applyZoom();
     }
@@ -2335,6 +2364,11 @@ document.getElementById('modal-img-wrap').addEventListener('touchmove',e=>{
 },{passive:false});
 document.getElementById('modal-img-wrap').addEventListener('touchend',e=>{
   if(e.touches.length<2){touchZoomActive=Math.max(0,e.touches.length);}
+  if(e.touches.length===1&&zoomScale>1){
+    isTouchPanning=true;
+    touchPanStartX=e.touches[0].clientX-zoomX;
+    touchPanStartY=e.touches[0].clientY-zoomY;
+  }
   if(e.touches.length===0){isTouchPanning=false;}
 },{passive:true});
 
