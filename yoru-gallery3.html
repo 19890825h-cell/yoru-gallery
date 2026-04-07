@@ -600,6 +600,8 @@ const WD14_CHARACTER_THRESHOLD = 0.85;
 const WD14_MAX_TAGS = 20;
 let wd14ClientPromise = null;
 let bulkRetagState = null;
+let autoTagTimer = null;
+let autoTagInFlightIds = new Set();
 
 // Password
 const DEFAULT_PW_HASH='8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
@@ -675,6 +677,7 @@ function loadImages(){
       setTimeout(()=>setLoading(false),600);
       renderGallery();
       updateStats();
+      schedulePendingAutoTagging();
     },
     (e)=>{
       console.error(e);
@@ -689,6 +692,34 @@ function setLoading(show,text,pct){
   const s=document.getElementById('loading-screen');
   if(show){s.classList.remove('hidden');if(text)document.getElementById('loading-text').textContent=text;if(pct!==undefined)document.getElementById('loading-bar').style.width=pct+'%';}
   else{s.classList.add('hidden');}
+}
+
+function schedulePendingAutoTagging(){
+  if(autoTagTimer || !HF_TOKEN || bulkRetagState?.running)return;
+  const pending=images.filter(img=>!(img.tags||[]).length && !autoTagInFlightIds.has(img.firestoreId));
+  if(!pending.length)return;
+  autoTagTimer=setTimeout(async()=>{
+    autoTagTimer=null;
+    const targets=images.filter(img=>!(img.tags||[]).length && !autoTagInFlightIds.has(img.firestoreId));
+    if(!targets.length || !HF_TOKEN || bulkRetagState?.running)return;
+    for(const img of targets){
+      autoTagInFlightIds.add(img.firestoreId);
+      try{
+        const tags=await tagWithWD14AfterUpload(null,img.url);
+        if(tags.length){
+          const autoMeta=buildAutoTaggingState(img,tags);
+          img.tags=tags;
+          img.nsfw=autoMeta.nsfw;
+          Object.assign(img,autoMeta.meta);
+          await updateImg(img.firestoreId,{tags,nsfw:img.nsfw,...autoMeta.meta});
+        }
+      }catch(err){
+        console.warn('[YORU] deferred auto-tagging failed:', err?.message || err);
+      }finally{
+        autoTagInFlightIds.delete(img.firestoreId);
+      }
+    }
+  },2500);
 }
 
 // Upload
@@ -1451,8 +1482,10 @@ function sleep(ms){
 }
 
 async function tagWithWD14AfterUpload(file,url){
-  const firstPass=await tagWithWD14(file);
-  if(firstPass.length)return firstPass;
+  if(file){
+    const firstPass=await tagWithWD14(file);
+    if(firstPass.length)return firstPass;
+  }
   for(const waitMs of [600,1200,2200]){
     await sleep(waitMs);
     const retryTags=await tagWithWD14(url);
