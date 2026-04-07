@@ -131,12 +131,20 @@
   .gallery-item{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--surface);cursor:pointer;border-radius:18px;border:1px solid rgba(255,255,255,0.05);box-shadow:var(--card-shadow);}
   .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s ease,filter 0.3s;filter:brightness(0.9) saturate(0.95);}
   .gallery-item:hover img{transform:scale(1.06);filter:brightness(1) saturate(1.1);}
+  .gallery-item.is-new{animation:newItemIn 0.65s cubic-bezier(0.22,1,0.36,1),outerOrbitGlow 2.4s linear infinite;}
+  .gallery-item.is-new::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(111,251,255,0.2),rgba(198,120,221,0.18));opacity:0;animation:newItemFlash 0.75s ease;pointer-events:none;z-index:1;}
+  .gallery-item.is-new{box-shadow:0 0 0 1px rgba(111,251,255,0.42),0 0 18px rgba(111,251,255,0.16),0 0 28px rgba(198,120,221,0.12),var(--card-shadow);}
+  .gallery-item.is-new[data-nsfw="true"]{animation:newItemIn 0.65s cubic-bezier(0.22,1,0.36,1),outerOrbitGlowNsfw 2.1s linear infinite;}
+  .gallery-item.is-new .new-badge{display:inline-flex;}
+  .gallery-item.is-new .new-ring{display:none;}
   .nsfw-blur img{filter:blur(16px) brightness(0.7) !important;}
   .nsfw-badge{position:absolute;top:0.4rem;left:0.4rem;background:rgba(224,108,138,0.9);color:#fff;font-family:'Space Mono',monospace;font-size:0.5rem;padding:0.15rem 0.35rem;border-radius:2px;z-index:3;pointer-events:none;}
   .gallery-item-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,5,8,0.9) 0%,rgba(5,5,8,0.25) 42%,transparent 72%);opacity:0;transition:opacity 0.3s;display:flex;flex-direction:column;justify-content:flex-end;padding:0.9rem;}
   .gallery-item:hover .gallery-item-overlay{opacity:1;}
   .item-title{font-size:0.7rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .item-meta{font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);margin-top:0.2rem;}
+  .new-badge{display:none;position:absolute;top:0.55rem;left:0.55rem;padding:0.18rem 0.44rem;background:rgba(5,5,8,0.9);border:1px solid rgba(111,251,255,0.75);color:var(--cyan);font-family:'Space Mono',monospace;font-size:0.48rem;letter-spacing:0.18em;border-radius:999px;box-shadow:0 0 16px rgba(111,251,255,0.35);animation:newBadgePulse 1.1s ease-in-out infinite;z-index:5;pointer-events:none;align-items:center;justify-content:center;}
+  .new-ring{display:none;}
   .item-actions{position:absolute;top:0.5rem;right:0.5rem;display:flex;gap:0.35rem;opacity:0;transition:opacity 0.3s;}
   .gallery-item:hover .item-actions{opacity:1;}
   .action-btn{background:rgba(5,5,8,0.85);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:2px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem;transition:all 0.2s;backdrop-filter:blur(8px);touch-action:manipulation;flex-shrink:0;}
@@ -241,6 +249,21 @@
   @keyframes glitch{0%,96%,100%{text-shadow:0 0 20px var(--glow),0 0 40px var(--glow);}2%{text-shadow:3px 0 15px rgba(86,182,194,0.5),-3px 0 15px rgba(224,108,138,0.5);}98%{text-shadow:-3px 0 15px rgba(86,182,194,0.5),3px 0 15px rgba(224,108,138,0.5);}}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
   @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes newItemIn{0%{opacity:0;transform:translateY(18px) scale(0.96);}100%{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes newItemFlash{0%{opacity:0.9;}100%{opacity:0;}}
+  @keyframes newBadgePulse{0%,100%{transform:scale(1);opacity:0.95;}50%{transform:scale(1.08);opacity:1;}}
+  @keyframes outerOrbitGlow{
+    0%,100%{box-shadow:0 -10px 24px rgba(111,251,255,0.34),0 0 0 1px rgba(111,251,255,0.38),var(--card-shadow);}
+    25%{box-shadow:10px 0 24px rgba(198,120,221,0.34),0 0 0 1px rgba(198,120,221,0.38),var(--card-shadow);}
+    50%{box-shadow:0 10px 24px rgba(123,94,167,0.34),0 0 0 1px rgba(123,94,167,0.38),var(--card-shadow);}
+    75%{box-shadow:-10px 0 24px rgba(111,251,255,0.28),0 0 0 1px rgba(111,251,255,0.34),var(--card-shadow);}
+  }
+  @keyframes outerOrbitGlowNsfw{
+    0%,100%{box-shadow:0 -10px 24px rgba(224,108,138,0.34),0 0 0 1px rgba(224,108,138,0.38),var(--card-shadow);}
+    25%{box-shadow:10px 0 24px rgba(255,92,92,0.34),0 0 0 1px rgba(255,92,92,0.38),var(--card-shadow);}
+    50%{box-shadow:0 10px 24px rgba(147,68,184,0.34),0 0 0 1px rgba(147,68,184,0.38),var(--card-shadow);}
+    75%{box-shadow:-10px 0 24px rgba(224,108,138,0.28),0 0 0 1px rgba(224,108,138,0.34),var(--card-shadow);}
+  }
   #file-input{display:none;}
 
   /* MOBILE */
@@ -523,6 +546,7 @@
           <span style="color:var(--accent2);">🔥</span> Firestore — メタデータ<br>
           <span style="font-size:0.6rem;">どのデバイスでも同期されます</span>
         </p>
+        <button onclick="setCloudDeleteWorkerUrl()" style="width:100%;margin-top:0.5rem;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;cursor:pointer;border-radius:3px;letter-spacing:0.08em;">削除API URL設定</button>
       </div>
     </div>
   </div>
@@ -571,7 +595,6 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBk_QX3wMDEwT-GsyCww2kLg6nRUEvzj1w",
@@ -584,12 +607,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const functions = getFunctions(app);
 const COL = 'yoru-images';
 
 // Cloudinary
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
-const deleteAssetCallable = httpsCallable(functions,'cloudinaryDeleteAsset');
+const DEFAULT_CLOUD_DELETE_WORKER_URL = 'https://yoru-gallery-delete.yoru-delete-api.workers.dev';
+let CLOUD_DELETE_WORKER_URL = localStorage.getItem('yoru-cloud-delete-worker-url') || DEFAULT_CLOUD_DELETE_WORKER_URL;
 
 // HuggingFace WD14
 const DEFAULT_HF_TOKEN = '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';
@@ -662,6 +685,8 @@ let activeWork=null;
 let selectedIds=new Set(),selectMode=false;
 let shuffledList=[];
 let focusMode=false,focusIndex=0;
+let hasLoadedInitialSnapshot=false;
+let recentlyAddedIds=new Set();
 // Pagination
 const PAGE_SIZE=50;
 let displayedCount=0;
@@ -674,9 +699,17 @@ function loadImages(){
   onSnapshot(
     q,
     (snap)=>{
+      const prevIds=new Set(images.map(img=>img.firestoreId));
       images=snap.docs.map(d=>({firestoreId:d.id,...d.data()}));
-      setLoading(true,'LIVE SYNC ACTIVE',100);
-      setTimeout(()=>setLoading(false),600);
+      if(hasLoadedInitialSnapshot){
+        const addedIds=images.map(img=>img.firestoreId).filter(id=>!prevIds.has(id));
+        if(addedIds.length){
+          addedIds.forEach(id=>recentlyAddedIds.add(id));
+        }
+      }else{
+        hasLoadedInitialSnapshot=true;
+        setLoading(false);
+      }
       renderGallery();
       updateStats();
       schedulePendingAutoTagging();
@@ -1503,6 +1536,15 @@ window.setHfToken=function(){
   showToast(HF_TOKEN?'✓ HFトークン設定完了':'⚠ トークンをクリアしました');
 };
 
+window.setCloudDeleteWorkerUrl=function(){
+  const v=prompt('Cloudflare Worker の削除API URLを入力:',CLOUD_DELETE_WORKER_URL);
+  if(v===null)return;
+  CLOUD_DELETE_WORKER_URL=v.trim();
+  if(CLOUD_DELETE_WORKER_URL)localStorage.setItem('yoru-cloud-delete-worker-url',CLOUD_DELETE_WORKER_URL);
+  else localStorage.removeItem('yoru-cloud-delete-worker-url');
+  showToast(CLOUD_DELETE_WORKER_URL?'✓ 削除API URLを設定しました':'⚠ 削除API URLをクリアしました');
+};
+
 function setBulkRetagUi(running,modeText){
   const btnUntagged=document.getElementById('bulk-retag-btn');
   const btnAll=document.getElementById('bulk-retag-all-btn');
@@ -1604,8 +1646,15 @@ function uploadToCloudinary(file,onProgress){
 
 // 公開HTMLでは Cloudinary の secret を持てないため、リモート削除は無効化
 async function deleteFromCloudinary(publicId){
-  const result=await deleteAssetCallable({ publicId });
-  return result?.data || null;
+  if(!CLOUD_DELETE_WORKER_URL)throw new Error('Delete API URL is not configured');
+  const res=await fetch(CLOUD_DELETE_WORKER_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ publicId })
+  });
+  const payload=await res.json().catch(()=>({}));
+  if(!res.ok || payload?.ok===false)throw new Error(payload?.error || payload?.message || 'Delete API failed');
+  return payload;
 }
 
 function extractPublicId(url){
@@ -1735,13 +1784,33 @@ if('IntersectionObserver' in window){
 
 function buildItemHtml(img,blurNsfw){
   const bl=img.nsfw&&blurNsfw;
+  const newCls=recentlyAddedIds.has(img.firestoreId)?' is-new':'';
+  const newBadge=recentlyAddedIds.has(img.firestoreId)?'<span class="new-badge">NEW</span>':'';
+  const newRing=recentlyAddedIds.has(img.firestoreId)?`<span class="new-ring" aria-hidden="true">
+    <svg viewBox="0 0 100 132" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="newRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6ffbff"/>
+          <stop offset="50%" stop-color="#c678dd"/>
+          <stop offset="100%" stop-color="#7b5ea7"/>
+        </linearGradient>
+        <linearGradient id="newRingGradientNsfw" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#e06c8a"/>
+          <stop offset="50%" stop-color="#ff5c5c"/>
+          <stop offset="100%" stop-color="#9344b8"/>
+        </linearGradient>
+      </defs>
+      <rect class="ring-stroke" x="4" y="4" width="92" height="124" rx="18" ry="18"></rect>
+    </svg>
+  </span>`:'';
   const topTags=(img.tags||[]).slice(0,3).map(t=>`<span class="item-tag" title="${escHtml(t)}">${escHtml(formatTagLabel(t))}</span>`).join('');
   const sel=selectedIds.has(img.firestoreId)?'selected':'';
   const display=getDisplayMetadata(img);
   const displayTitle=display.title_ja||img.name;
   const displayMeta=(display.caption_ja||formatDate(img.date)).slice(0,70);
   if(selectMode){
-    return `<div class="gallery-item${bl?' nsfw-blur':''} ${sel}" data-id="${img.firestoreId}" onclick="toggleSelect('${img.firestoreId}',event)">
+    return `<div class="gallery-item${bl?' nsfw-blur':''}${newCls} ${sel}" data-id="${img.firestoreId}" data-nsfw="${img.nsfw?'true':'false'}" onclick="toggleSelect('${img.firestoreId}',event)">
+      ${newBadge}${newRing}
       ${img.nsfw?'<div class="nsfw-badge">NSFW</div>':''}
       <img src="${img.url}" alt="${img.name}" loading="lazy">
       <div class="gallery-item-overlay">
@@ -1751,7 +1820,8 @@ function buildItemHtml(img,blurNsfw){
       </div>
     </div>`;
   }
-  return `<div class="gallery-item${bl?' nsfw-blur':''}" data-id="${img.firestoreId}">
+  return `<div class="gallery-item${bl?' nsfw-blur':''}${newCls}" data-id="${img.firestoreId}" data-nsfw="${img.nsfw?'true':'false'}">
+    ${newBadge}${newRing}
     ${img.nsfw?'<div class="nsfw-badge">NSFW</div>':''}
     <img src="${img.url}" alt="${img.name}" loading="lazy" onclick="openModal('${img.firestoreId}')">
     <div class="gallery-item-overlay" onclick="openModal('${img.firestoreId}')">
@@ -1908,9 +1978,9 @@ window.deleteImg=async function(id){
   await removeImg(id);
   const pid=img?.publicId||extractPublicId(img?.url);
   if(pid){
-    try{await deleteFromCloudinary(pid);showToast('🗑 Firestore削除済み');}
-    catch(e){showToast('🗑 Firestore削除済み（画像ファイルは残ります）');}
-  }else{showToast('🗑 削除しました');}
+    try{await deleteFromCloudinary(pid);showToast('🗑 Firestore と Cloudinary の両方から削除しました');}
+    catch(e){showToast('🗑 Firestore は削除済み（Cloudinary 側ファイルは残ります）');}
+  }else{showToast('🗑 Firestore から削除しました');}
 };
 
 // ===== SORT (6 RND included) =====
@@ -2053,7 +2123,7 @@ window.bulkDelete=async function(){
     const pid=img?.publicId||extractPublicId(img?.url);
     if(pid){try{await deleteFromCloudinary(pid);}catch(_){}}
   }
-  updateStats();renderGallery();showToast(`🗑 ${ids.length}件を削除しました`);
+  updateStats();renderGallery();showToast(`🗑 ${ids.length}件を Firestore と Cloudinary の両方から削除しました`);
 };
 // Bulk Download (3)
 window.bulkDownload=async function(){
@@ -2096,6 +2166,10 @@ function updateModalRetagButton(img){
 window.openModal=function(id){
   if(selectMode)return;
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
+  if(recentlyAddedIds.has(id)){
+    recentlyAddedIds.delete(id);
+    renderGallery(false);
+  }
   const display=getDisplayMetadata(img);
   currentModalId=id;
   resetZoom();
