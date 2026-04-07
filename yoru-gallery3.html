@@ -571,6 +571,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBk_QX3wMDEwT-GsyCww2kLg6nRUEvzj1w",
@@ -583,11 +584,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const functions = getFunctions(app);
 const COL = 'yoru-images';
 
 // Cloudinary
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
-const CLOUD_API_KEY='525886811592581', CLOUD_API_SECRET='4g95iR1lrNiTwWts1P-oGt7UtWM';
+const deleteAssetCallable = httpsCallable(functions,'cloudinaryDeleteAsset');
 
 // HuggingFace WD14
 const DEFAULT_HF_TOKEN = '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';
@@ -1602,13 +1604,8 @@ function uploadToCloudinary(file,onProgress){
 
 // 公開HTMLでは Cloudinary の secret を持てないため、リモート削除は無効化
 async function deleteFromCloudinary(publicId){
-  const timestamp=Math.floor(Date.now()/1000);
-  const sigStr=`public_id=${publicId}&timestamp=${timestamp}${CLOUD_API_SECRET}`;
-  const buf=await crypto.subtle.digest('SHA-1',new TextEncoder().encode(sigStr));
-  const signature=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  const form=new FormData();form.append('public_id',publicId);form.append('api_key',CLOUD_API_KEY);form.append('timestamp',String(timestamp));form.append('signature',signature);
-  const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/destroy`,{method:'POST',body:form});
-  return res.json();
+  const result=await deleteAssetCallable({ publicId });
+  return result?.data || null;
 }
 
 function extractPublicId(url){
