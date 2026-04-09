@@ -1762,138 +1762,6 @@ function applyVoiceStyle(line, style, seed){
   return text;
 }
 
-// NSFW用キャラクター音声スタイル適用
-function applyNsfwVoiceStyle(dialogue, style, seed){
-  if(!dialogue || !style) return dialogue;
-  const v = (arr) => arr[seed % arr.length];
-  switch(style){
-    // ===== ウマ娘 =====
-    case 'cool_refined':   // エアグルーヴ
-      return v([
-        `わたくしとしたことが…${dialogue}はしたないとわかっていますわ…でも…止まれませんわっ…`,
-        `こんな声を上げるなど…${dialogue}…あなたの前だから…許しますわっ…`
-      ]);
-    case 'proud_sweet':    // ダイワスカーレット
-      return v([
-        `べ、別にっ…${dialogue}き、気持ちいいとか言ってないんだからっ…！`,
-        `あなたに見せてあげてるんだからっ…${dialogue}ちゃんと受け止めなさいよっ…！`
-      ]);
-    case 'playful_chaotic': // ゴールドシップ
-      return v([
-        `ちょ、ゴルシこれはマジでヤバいんやけどっ…${dialogue}もうあかんっ…！`,
-        `うわーっ！${dialogue}ゴルシの限界超えてくるやんっ…！`
-      ]);
-    case 'rough_warm':     // ウオッカ
-      return v([
-        `な、なんだよ…${dialogue}俺がこんな声出すとか…`,
-        `う、うるさいっ…${dialogue}気持ちよすぎてどうしろっつんだっ…`
-      ]);
-    case 'earnest_soft':   // スペシャルウィーク
-      return v([
-        `こんなのはじめてですっ…${dialogue}でも…やめてほしくないですっ…`,
-        `す、すごいですっ…${dialogue}こんなに感じてしまってっ…`
-      ]);
-    case 'composed_soft':  // エイシンフラッシュ
-      return v([
-        `落ち着いていようとしているのに…${dialogue}あなたの前だと…乱れてしまいますね…`,
-        `こんなふうになるのは…${dialogue}…珍しいことです…止まれません…`
-      ]);
-    case 'shy_sharp':      // ナリタタイシン
-      return v([
-        `み、見ないでよっ…${dialogue}…でも…やめないで…`,
-        `こんな顔…見られたくないのに…${dialogue}離れてほしくないっ…`
-      ]);
-    case 'uma_energetic':  // テイオー
-      return v([
-        `うわあっ！${dialogue}こんなにきもちいいの、テイオーはじめてだよっ…！`,
-        `すごいっ…${dialogue}テイオー…もうイきそうっ…！`
-      ]);
-    case 'uma_elegant':    // メジロマックイーン
-      return v([
-        `メジロの名に懸けて取り乱すわけには…${dialogue}…ですが…もう…止まれませんわっ…`,
-        `こんなはしたない声を…${dialogue}…あなただから…許しますわっ…`
-      ]);
-    case 'uma_quiet':      // サイレンススズカ
-      return v([
-        `…${dialogue}…ごめんなさい…声が…出てしまって…`,
-        `…止まれない…${dialogue}…あなたの前だと…素直になってしまう…`
-      ]);
-    case 'uma_stoic':      // オグリキャップ
-      return v([
-        `…感情の制御が…乱れている…${dialogue}…だが…止まれない…`,
-        `…${dialogue}…こういう感覚は…初めてだ…悪くない…`
-      ]);
-    case 'uma_shy':        // ライスシャワー
-      return v([
-        `わ、わたしなんかが…${dialogue}…こんなになっていいんでしょうか…`,
-        `ご、ごめんなさい…${dialogue}…でも…やめないでください…`
-      ]);
-    case 'uma_eerie':      // マンハッタンカフェ
-      return v([
-        `…感じます…あなたの熱を…${dialogue}…不思議と…離れたくない…`,
-        `…${dialogue}…体が…正直に…反応してしまっています…`
-      ]);
-    case 'uma_emperor':    // シンボリルドルフ
-      return v([
-        `余がこれほど乱れるとは…${dialogue}…汝だけだ…許してやろう…`,
-        `皇帝たる余が声を上げるなど…${dialogue}…だが…止まれぬ…`
-      ]);
-    case 'uma_soft':       // ウマ娘汎用
-      return v([
-        `${dialogue}ウマ娘がこんなになってしまうなんて…でも…止まれませんっ…`,
-        `${dialogue}…こんな姿…見せていいのはあなただけですっ…`
-      ]);
-    // ===== ガンダム =====
-    case 'gundam_princess': // ラクス・リリーナ系
-      return v([
-        `こんなはしたない姿を…${dialogue}…でも…あなたになら…止まれませんわ…`,
-        `わたくしがこれほど乱れるなど…${dialogue}…あなただから…許しますわっ…`
-      ]);
-    case 'gundam_soldier':  // ルナマリア・ノイン系
-      return v([
-        `任務中にこんな…${dialogue}…でも…やめられません…`,
-        `軍人として恥ずかしいのに…${dialogue}…体が止まらない…`
-      ]);
-    case 'gundam_broken':   // ステラ・フォウ系
-      return v([
-        `…こわい…でも…${dialogue}…やめないで…`,
-        `わからない…でも…気持ちいい…${dialogue}…いや…もっとして…`
-      ]);
-    case 'gundam_tyrant':   // ハマーン系
-      return v([
-        `貴様の前でこんな声を上げるなど…${dialogue}…許してあげますわっ…`,
-        `わたしを乱すなど…${dialogue}…許しませんわよ…でも…止まらないっ…`
-      ]);
-    case 'gundam_idol':     // ミーア系
-      return v([
-        `ラクスはこんな声…出さないわよ…でも…${dialogue}…もう我慢できないっ…`,
-        `${dialogue}…えへへ…こんなわたしも…見ていてくれる…？`
-      ]);
-    case 'gundam_spoiled':  // フレイ系
-      return v([
-        `${dialogue}…わたしだけを見てよっ…ずっと…`,
-        `あなただけが…${dialogue}…離さないでっ…`
-      ]);
-    // ===== リコリス =====
-    case 'bright_open':     // 千束
-      return v([
-        `うわっ！${dialogue}千束、こんなになるの想定外だったんだけど！`,
-        `えっ、これどうすんの！${dialogue}…もうイきそうなんだけどっ…！`
-      ]);
-    case 'reserved_gentle': // たきな
-      return v([
-        `…${dialogue}…声が…出てしまっています…制御できません…`,
-        `…こんなに乱れるのは…${dialogue}…あなたの前だけです…`
-      ]);
-    case 'lycoris_soft':
-      return v([
-        `${dialogue}…こんな気持ちになるの、初めてかもしれない…`,
-        `…${dialogue}…近くにいてくれると…それだけで…`
-      ]);
-    default:
-      return dialogue;
-  }
-}
 
 function generateJapaneseMetadata(image){
   const tags=image.tags||[];
@@ -2237,8 +2105,7 @@ function generateJapaneseMetadata(image){
     const lineA = pickVariant(seed,        poolA);
     const lineB = pickVariant(seed + 1000, poolB);
     const lineC = pickVariant(seed + 2000, poolC);
-    const raw = `${lineA}${lineB}${lineC}`;
-    dialogue_ja = voiceStyle ? applyNsfwVoiceStyle(raw, voiceStyle, seed + 3000) : raw;
+    dialogue_ja = `${lineA}${lineB}${lineC}`;
   }
 
   // ===== タイトル生成（C/D/E方式）=====
