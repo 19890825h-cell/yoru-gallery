@@ -2241,10 +2241,103 @@ function generateJapaneseMetadata(image){
     dialogue_ja = voiceStyle ? applyNsfwVoiceStyle(raw, voiceStyle, seed + 3000) : raw;
   }
 
-  const primaryAction=actions[0] || bodyBits[0] || (image.nsfw ? 'エロいことしてる' : firstMatchingLabel(tags,['kiss','lying']) || 'イラスト');
-  const titleParts=[subject, primaryAction, emotion].filter(Boolean);
-  if(!titleParts.length && work)titleParts.push(work);
-  const title_ja=titleParts.join(' / ') || (isNsfw ? 'エロいシーン' : 'イラスト');
+  // ===== タイトル生成（C/D/E方式）=====
+  const title_ja = (()=>{
+    // --- 行為・感情をもとにした語句マップ ---
+    const actionPhrase = {
+      '正常位':    { verb:'押さえ込まれて', noun:'重なり合う夜' },
+      '騎乗位':    { verb:'跨がって乱れて', noun:'上から溺れる' },
+      'しゃがみ騎乗位':{ verb:'腰を落として', noun:'深く溺れる夜' },
+      '跨り':      { verb:'跨がって離さない', noun:'跨がりながら' },
+      '口づけ':    { verb:'唇を重ねながら', noun:'口づけの熱' },
+      '情事':      { verb:'乱れていく', noun:'夜の情事' },
+      '膣内射精':  { verb:'奥まで受け止めて', noun:'満たされた夜' },
+      '露出':      { verb:'全部見せて', noun:'晒した素顔' },
+      '横臥':      { verb:'横たわりながら', noun:'横たわる誘惑' },
+      '男性露出':  { verb:'乱れる夜', noun:'夜の素顔' },
+      '秘部露出':  { verb:'晒しながら感じて', noun:'晒された秘密' },
+      '胸元露わ':  { verb:'胸を見せながら', noun:'露わな夜' },
+      '爆乳':      { verb:'揺れながら乱れて', noun:'揺れる夜' },
+      '巨乳':      { verb:'揺れながら乱れて', noun:'揺れる夜' },
+      '断面図':    { verb:'奥まで暴かれて', noun:'断面の真実' },
+    };
+    const emotionPhrase = {
+      'アヘ顔':           { verb:'頭が真っ白になって', suffix:'もう戻れない' },
+      'いやらしく煽ってる':{ verb:'挑発しながら', suffix:'全部見せて' },
+      '嬉しそう':         { verb:'嬉しそうに乱れて', suffix:'笑顔で溺れて' },
+      '照れながら感じてる':{ verb:'頬を染めながら', suffix:'恥ずかしいのに止まらない' },
+      '泣き顔':           { verb:'泣きながら感じて', suffix:'涙で濡れた夜' },
+      '汗だくで感じてる': { verb:'汗だくで乱れて', suffix:'全力で感じて' },
+      'こっちを見てる':   { verb:'目を逸らさずに', suffix:'見つめながら乱れて' },
+      '振り向きながら誘ってる':{ verb:'振り向いて誘って', suffix:'誘惑の背中' },
+    };
+
+    const ap = actionPhrase[actions[0]] || actionPhrase[bodyBits.find(b=>actionPhrase[b])] || null;
+    const ep = emotionPhrase[emotion] || null;
+    const titleSeed = seed + 9000;
+
+    // C: キャラクターがいる場合
+    if(subject){
+      if(!isNsfw){
+        // SAFE + キャラ
+        const safeEmote = ep ? ep.verb : (emotion || 'ほほえんで');
+        return pickVariant(titleSeed,[
+          `${subject}、${safeEmote}`,
+          `${subject}の${ep ? ep.suffix : 'やさしい表情'}`,
+          `${subject}——${ep ? ep.verb : 'そっと'}`,
+        ]);
+      }
+      // NSFW + キャラ
+      if(ap && ep){
+        return pickVariant(titleSeed,[
+          `${subject}、${ep.verb}${ap.verb}`,
+          `${subject}——${ep.suffix}`,
+          `${subject}が${ap.verb}、${ep.suffix}`,
+        ]);
+      } else if(ap){
+        return pickVariant(titleSeed,[
+          `${subject}、${ap.verb}`,
+          `${subject}の${ap.noun}`,
+          `${subject}——${ap.verb}`,
+        ]);
+      } else if(ep){
+        return pickVariant(titleSeed,[
+          `${subject}、${ep.verb}`,
+          `${subject}——${ep.suffix}`,
+          `${subject}が${ep.verb}`,
+        ]);
+      }
+      return pickVariant(titleSeed,[
+        `${subject}の乱れた夜`,
+        `${subject}、感じてしまって`,
+        `${subject}——止まれない`,
+      ]);
+    }
+
+    // D/E: キャラなし → 状況文 or 動詞化（seedで振り分け）
+    if(!isNsfw){
+      // SAFE
+      return ep
+        ? pickVariant(titleSeed,[ep.verb, ep.suffix, `${ep.verb}、その横顔`])
+        : 'イラスト';
+    }
+    // NSFW・D（三人称状況文）
+    const styleD = ()=>{
+      if(ap && ep) return pickVariant(titleSeed,  [`${ep.verb}、${ap.verb}`,`${ap.noun}の中で${ep.suffix}`,`${ep.verb}まま${ap.verb}`]);
+      if(ap)       return pickVariant(titleSeed+1,[ap.noun, `彼女が${ap.verb}`, `${ap.verb}、離さない`]);
+      if(ep)       return pickVariant(titleSeed+2,[ep.suffix, `彼女が${ep.verb}`, `${ep.verb}、止まれない`]);
+      return pickVariant(titleSeed+3,['彼女が乱れていく','夜の素顔','感じながら溺れて']);
+    };
+    // NSFW・E（動詞化）
+    const styleE = ()=>{
+      if(ap && ep) return pickVariant(titleSeed,  [`${ep.verb}${ap.verb}`,`${ap.verb}、${ep.suffix}`,`${ep.verb}まま、溺れて`]);
+      if(ap)       return pickVariant(titleSeed+1,[`${ap.verb}`,`${ap.verb}、離さない`,ap.noun]);
+      if(ep)       return pickVariant(titleSeed+2,[`${ep.verb}`,`${ep.suffix}`,`${ep.verb}、もう戻れない`]);
+      return pickVariant(titleSeed+3,['乱れていく','感じて、止まらない','溺れながら']);
+    };
+    // seedで D/E をランダムに切り替え
+    return (titleSeed % 2 === 0) ? styleD() : styleE();
+  })();
 
   const subjectText = subject
     ? (work && !subject.includes(work) ? `${subject}（${work}）` : subject)
