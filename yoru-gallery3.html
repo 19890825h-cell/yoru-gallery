@@ -16,12 +16,6 @@
     --header-h:64px;--radius-sm:10px;--radius-md:18px;--radius-lg:24px;
     --panel-shadow:0 18px 50px rgba(0,0,0,0.28);--card-shadow:0 10px 24px rgba(0,0,0,0.2);
   }
-  body.light-mode {
-    --bg:#f5f5f8;--bg2:#eeeef3;--surface:#ffffff;--surface2:#f0f0f5;
-    --text:#1a1a2e;--muted:#6b6b8a;--border:#d0d0e0;
-    --accent:#6d28d9;--accent2:#7c3aed;--cyan:#0891b2;--pink:#db2777;
-    --glow:rgba(109,40,217,0.2);
-  }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html{touch-action:pan-x pan-y;}
   body{background:
@@ -32,8 +26,6 @@
   body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:0.18;}
   body::after{content:'';position:fixed;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.015),transparent 18%,transparent 82%,rgba(255,255,255,0.015));pointer-events:none;z-index:9998;}
   body.modal-open::after{display:none;}
-  body.light-mode::before{opacity:0.15;}
-  body.light-mode::after{background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.01) 2px,rgba(0,0,0,0.01) 4px);}
 
   /* PASSWORD */
   #pw-screen{display:none !important;}
@@ -62,7 +54,6 @@
 
   /* HEADER */
   header{position:sticky;top:0;z-index:100;background:rgba(5,5,8,0.78);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:var(--header-h);gap:0.75rem;box-shadow:0 10px 40px rgba(0,0,0,0.18);}
-  body.light-mode header{background:rgba(245,245,248,0.92);}
   body.booting header{opacity:0;transform:translateY(-12px);animation:bootHeaderIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.08s forwards;}
   .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.12em;color:var(--accent2);text-shadow:0 0 15px var(--glow);animation:glitch 8s infinite;line-height:1;flex-shrink:0;}
   .logo span{color:var(--cyan);}
@@ -70,7 +61,6 @@
   .header-right{display:flex;align-items:center;gap:0.5rem;flex-shrink:0;background:rgba(15,15,26,0.72);border:1px solid rgba(255,255,255,0.05);padding:0.35rem 0.45rem;border-radius:999px;box-shadow:var(--card-shadow);}
   .count-badge{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);white-space:nowrap;}
   .count-badge span{color:var(--accent2);}
-  .version-badge{font-family:'Space Mono',monospace;font-size:0.52rem;color:var(--cyan);border:1px solid rgba(111,251,255,0.28);background:rgba(86,182,194,0.08);padding:0.14rem 0.42rem;border-radius:999px;letter-spacing:0.12em;white-space:nowrap;}
   .pulse-dot{display:inline-block;width:5px;height:5px;background:var(--cyan);border-radius:50%;margin-right:0.4rem;animation:pulse 2s infinite;}
   .live-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--cyan);border:1px solid var(--cyan);padding:0.1rem 0.35rem;border-radius:2px;margin-left:0.4rem;letter-spacing:0.1em;opacity:0.8;}
   .view-toggle{display:flex;gap:0.2rem;}
@@ -188,6 +178,14 @@
   .sidebar-card{background:rgba(15,15,26,0.78);border:1px solid rgba(255,255,255,0.05);padding:1rem;position:relative;border-radius:var(--radius-md);box-shadow:var(--card-shadow);backdrop-filter:blur(14px);}
   .sidebar-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),transparent);}
   .sidebar-label{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-bottom:0.75rem;}
+  .mobile-index{display:none;margin-top:1rem;}
+  .mobile-index details{background:rgba(15,15,26,0.78);border:1px solid rgba(255,255,255,0.05);border-radius:var(--radius-md);box-shadow:var(--card-shadow);overflow:hidden;}
+  .mobile-index summary{list-style:none;cursor:pointer;padding:0.95rem 1rem;font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.16em;color:var(--muted);display:flex;align-items:center;justify-content:space-between;background:rgba(15,15,26,0.92);}
+  .mobile-index summary::-webkit-details-marker{display:none;}
+  .mobile-index summary::after{content:'+';color:var(--cyan);font-size:1rem;line-height:1;}
+  .mobile-index details[open] summary::after{content:'-';}
+  .mobile-index-body{padding:0.9rem 1rem 1rem;background:rgba(10,10,18,0.88);display:flex;flex-direction:column;gap:1rem;}
+  .mobile-index-panel .sidebar-label{margin-bottom:0.55rem;}
   .stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;}
   .stat-item{text-align:center;}
   .stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent2);line-height:1;text-shadow:0 0 15px var(--glow);}
@@ -304,7 +302,7 @@
     .action-btn{width:36px;height:36px;}
     .modal-nav{width:34px;height:50px;font-size:1rem;}
     .count-badge{display:none;}
-    .version-badge{font-size:0.48rem;padding:0.12rem 0.36rem;}
+    .mobile-index{display:block;}
   }
   /* TAG BROWSER */
   .tag-sort-btns{display:flex;gap:0.25rem;}
@@ -411,8 +409,6 @@
   <div class="logo">YORU<span>夜</span><span class="logo-sub">AI ANIME GALLERY</span></div>
   <div class="header-right">
     <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> IMAGES<span class="live-badge">LIVE</span></span>
-    <span class="version-badge" id="version-badge">v?.?.?</span>
-    <button class="hdr-btn" id="btn-theme" onclick="toggleTheme()" title="ライト/ダーク切替">🌙</button>
     <button class="hdr-btn" id="btn-select" onclick="toggleSelectMode()" title="一括選択モード">SELECT</button>
     <div class="view-toggle">
       <button class="view-btn" id="btn-compact" onclick="setView('compact')">⊞</button>
@@ -473,6 +469,25 @@
       <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
         <span class="load-more-info" id="load-more-info"></span>
         <button class="load-more-btn" onclick="loadMoreImages()">さらに読み込む</button>
+      </div>
+      <div class="mobile-index">
+        <details>
+          <summary>INDEX</summary>
+          <div class="mobile-index-body">
+            <div class="mobile-index-panel">
+              <div class="sidebar-label">TAGS</div>
+              <div class="tag-cloud" id="mobile-tag-cloud"><span style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);">タグなし</span></div>
+            </div>
+            <div class="mobile-index-panel">
+              <div class="sidebar-label">CHARACTERS</div>
+              <div class="index-cloud" id="mobile-character-cloud"><span style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);">キャラタグなし</span></div>
+            </div>
+            <div class="mobile-index-panel">
+              <div class="sidebar-label">WORKS</div>
+              <div class="index-cloud" id="mobile-work-cloud"><span style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);">作品タグなし</span></div>
+            </div>
+          </div>
+        </details>
       </div>
       <!-- FOCUS LAYOUT -->
       <div class="focus-layout" id="focus-layout">
@@ -623,8 +638,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const COL = 'yoru-images';
-const APP_VERSION = 'v1.8.0';
-document.getElementById('version-badge').textContent = APP_VERSION;
 setTimeout(()=>document.body.classList.remove('booting'),1400);
 
 // Cloudinary
@@ -686,15 +699,6 @@ if(AUTH_BYPASS || sessionStorage.getItem('yoru-auth')==='1'){
   document.getElementById('pw-screen').classList.add('hidden');
   loadImages();
 }
-
-// ===== THEME (9) =====
-let lightMode=localStorage.getItem('yoru-theme')==='light';
-function applyTheme(){
-  document.body.classList.toggle('light-mode',lightMode);
-  document.getElementById('btn-theme').textContent=lightMode?'☀':'🌙';
-}
-applyTheme();
-window.toggleTheme=function(){lightMode=!lightMode;localStorage.setItem('yoru-theme',lightMode?'light':'dark');applyTheme();};
 
 // Sidebar
 window.toggleSidebar=function(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-backdrop').classList.toggle('show');};
@@ -2255,12 +2259,19 @@ function kanaOrderKey(tag){
 
 function renderTagCloud(){
   const cloud=document.getElementById('tag-cloud');if(!cloud)return;
+  const mobileCloud=document.getElementById('mobile-tag-cloud');
   const counts={};images.forEach(img=>(img.tags||[]).forEach(t=>{counts[t]=(counts[t]||0)+1;}));
   const tags=Object.keys(counts);
-  if(!tags.length){cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">タグなし</span>';renderCharacterCloud();renderWorkCloud();return;}
+  if(!tags.length){
+    cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">タグなし</span>';
+    if(mobileCloud)mobileCloud.innerHTML=cloud.innerHTML;
+    renderCharacterCloud();renderWorkCloud();return;
+  }
   if(tagSort==='kana'){tags.sort((a,b)=>kanaOrderKey(a).localeCompare(kanaOrderKey(b)));}
   else{tags.sort((a,b)=>a.localeCompare(b));}
-  cloud.innerHTML=tags.map(t=>`<span class="tc-tag${activeTag===t?' active':''}" onclick='setActiveTag(${JSON.stringify(t)})' title="${escHtml(t)}">${escHtml(formatTagLabel(t))}<span class="tc-count">${counts[t]}</span></span>`).join('');
+  const html=tags.map(t=>`<span class="tc-tag${activeTag===t?' active':''}" onclick='setActiveTag(${JSON.stringify(t)})' title="${escHtml(t)}">${escHtml(formatTagLabel(t))}<span class="tc-count">${counts[t]}</span></span>`).join('');
+  cloud.innerHTML=html;
+  if(mobileCloud)mobileCloud.innerHTML=html;
   renderCharacterCloud();
   renderWorkCloud();
 }
@@ -2323,18 +2334,26 @@ window.clearActiveTag=function(){activeTag=null;activeWork=null;document.getElem
 
 function renderCharacterCloud(){
   const cloud=document.getElementById('character-cloud');if(!cloud)return;
+  const mobileCloud=document.getElementById('mobile-character-cloud');
   const counts={};
   images.forEach(img=>(img.tags||[]).forEach(tag=>{
     const parsed=getCharacterWorkInfo(tag);
     if(parsed){counts[tag]=(counts[tag]||0)+1;}
   }));
   const tags=Object.keys(counts).sort((a,b)=>a.localeCompare(b));
-  if(!tags.length){cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">キャラタグなし</span>';return;}
-  cloud.innerHTML=tags.map(tag=>`<button class="index-chip${activeTag===tag?' active':''}" onclick='setActiveTag(${JSON.stringify(tag)})' title="${escHtml(tag)}"><span class="index-name">${escHtml(formatTagLabel(tag))}</span><span class="index-count">${counts[tag]}</span></button>`).join('');
+  if(!tags.length){
+    cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">キャラタグなし</span>';
+    if(mobileCloud)mobileCloud.innerHTML=cloud.innerHTML;
+    return;
+  }
+  const html=tags.map(tag=>`<button class="index-chip${activeTag===tag?' active':''}" onclick='setActiveTag(${JSON.stringify(tag)})' title="${escHtml(tag)}"><span class="index-name">${escHtml(formatTagLabel(tag))}</span><span class="index-count">${counts[tag]}</span></button>`).join('');
+  cloud.innerHTML=html;
+  if(mobileCloud)mobileCloud.innerHTML=html;
 }
 
 function renderWorkCloud(){
   const cloud=document.getElementById('work-cloud');if(!cloud)return;
+  const mobileCloud=document.getElementById('mobile-work-cloud');
   const counts={};
   images.forEach(img=>{
     const worksForImage=new Set();
@@ -2349,8 +2368,14 @@ function renderWorkCloud(){
     });
   });
   const works=Object.keys(counts).sort((a,b)=>a.localeCompare(b));
-  if(!works.length){cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">作品タグなし</span>';return;}
-  cloud.innerHTML=works.map(work=>`<button class="index-chip${activeWork===work?' active':''}" onclick='setActiveWork(${JSON.stringify(work)})' title="${escHtml(work)}"><span class="index-name">${escHtml(formatEntityLabel(work))}</span><span class="index-count">${counts[work]}</span></button>`).join('');
+  if(!works.length){
+    cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">作品タグなし</span>';
+    if(mobileCloud)mobileCloud.innerHTML=cloud.innerHTML;
+    return;
+  }
+  const html=works.map(work=>`<button class="index-chip${activeWork===work?' active':''}" onclick='setActiveWork(${JSON.stringify(work)})' title="${escHtml(work)}"><span class="index-name">${escHtml(formatEntityLabel(work))}</span><span class="index-count">${counts[work]}</span></button>`).join('');
+  cloud.innerHTML=html;
+  if(mobileCloud)mobileCloud.innerHTML=html;
 }
 
 function updateStats(){
