@@ -1804,43 +1804,80 @@ function generateJapaneseMetadata(image){
     ? (work && !subject.includes(work) ? `${subject}（${work}）` : subject)
     : (work || 'この子');
   const placeText = place ? `${place}で` : '';
-  const actionText = actions.length ? actions.join('、') : (isNsfw ? 'エロいことしてる' : 'じっとしている');
-  const bodyText = bodyBits.length ? `、${bodyBits.join('、')}` : '';
-  const emotionText = emotion ? `、${emotion}` : '';
 
   let caption_ja;
   if(isNsfw){
-    caption_ja = pickVariant(seed,[
-      `${subjectText}が${placeText}${actionText}${bodyText}${emotionText}。羞恥心より快感が勝ってしまっている。`,
-      `${placeText||''}${subjectText}は${actionText}${bodyText}${emotionText}。もう止まれない状態だ。`,
-      `${subjectText}の${actionText}${bodyText}${emotionText}。隠す気力も残っていない。`
-    ]);
-    if(hasAnyTag(tags,['internal_cumshot','cum_in_pussy'])){
-      caption_ja += pickVariant(seed+1,[
-        ' 子宮の奥まで直接注ぎ込まれ、溢れ出るほど満たされている。',
-        ' 膣内にたっぷり射精され、熱い精液が奥から溢れている。',
-        ' 中出しされた精液が子宮に溜まり、腹の中から熱を放っている。'
+    // 行為・体・感情を自然な文として組み立てる
+    const hasAction = actions.length > 0;
+    const hasCum = hasAnyTag(tags,['internal_cumshot','cum_in_pussy']);
+    const hasXray = hasAnyTag(tags,['x-ray','cross-section']);
+    const hasKiss = hasAnyTag(tags,['kiss','french_kiss']);
+    const hasMissionary = hasAnyTag(tags,['missionary']);
+    const hasCowgirl = hasAnyTag(tags,['cowgirl_position','squatting_cowgirl_position']);
+    const hasStraddling = hasAnyTag(tags,['straddling']);
+    const hasAhegao = hasAnyTag(tags,['ahegao']);
+    const hasPussy = hasAnyTag(tags,['pussy']);
+    const hasNipples = hasAnyTag(tags,['nipples']);
+    const hasHuge = hasAnyTag(tags,['huge_breasts']);
+    const hasLarge = hasAnyTag(tags,['large_breasts']);
+
+    const breastDesc = hasHuge ? '爆乳を揺らしながら' : hasLarge ? '豊満な胸を揺らしながら' : '';
+    const exposedDesc = hasPussy && hasNipples ? '秘部も乳首も晒したまま' : hasPussy ? '濡れた秘部を晒したまま' : hasNipples ? '乳首を見せつけながら' : '';
+    const emotionDesc = hasAhegao ? 'とろけた表情で' : emotion === '照れながら感じてる' ? '恥ずかしさに顔を染めながらも' : emotion === '汗だくで感じてる' ? '汗だくになりながら' : emotion === 'いやらしく煽ってる' ? '挑発的な目つきで' : '';
+
+    if(hasCum){
+      caption_ja = pickVariant(seed,[
+        `${subjectText}が${placeText}奥まで受け入れ、そのまま中に出させている。${emotionDesc}絶頂の余韻が体中に広がっている。`,
+        `${placeText}${subjectText}は膣の奥で射精を受け止めた。${breastDesc}熱が引かないまま、まだ揺れている。`,
+        `${subjectText}の中に全てを注ぎ込まれた瞬間の一枚。${emotionDesc}体が正直に反応してしまっている。`
       ]);
-    }else if(hasAnyTag(tags,['x-ray','cross-section'])){
-      caption_ja += pickVariant(seed+2,[
-        ' 断面図で丸わかり——膣壁を押し広げながら子宮口まで届いている。',
-        ' 透過された体内では、肉棒が子宮口をノックし続けている。',
-        ' 断面越しに見えるのは、奥まで届いてグチャグチャにかき回される内壁だ。'
+    } else if(hasXray){
+      caption_ja = pickVariant(seed,[
+        `断面図が暴く、${subjectText}の内側——肉棒が膣壁を押し広げながら子宮口まで届いている。`,
+        `${subjectText}の体内を透かして見れば、どれほど奥まで貫かれているかが一目瞭然だ。`,
+        `透過された体の中で何が起きているか、断面が全て語っている。${subjectText}は${placeText}奥まで満たされている。`
       ]);
-    }else if(hasAnyTag(tags,['kiss','french_kiss']) && emotion){
-      caption_ja += pickVariant(seed+3,[
-        ' 舌を絡ませたまま下も同時に責められ、どちらの快感も逃せない。',
-        ' 口を塞がれたまま感じさせられ、くぐもった嬌声しか出せない。',
-        ' キスで思考を奪われながら、下半身だけが正直に濡れ続けている。'
+    } else if(hasMissionary){
+      caption_ja = pickVariant(seed,[
+        `${subjectText}が${placeText}正面から押さえ込まれ、奥まで突き入れられている。${emotionDesc}${breastDesc}快感を逃がせない体勢だ。`,
+        `向かい合ったまま深く繋がる${subjectText}。${placeText}${exposedDesc}、全てを受け入れている。`,
+        `${placeText}${breastDesc}${subjectText}は正常位でイかされ続けている。${emotionDesc}声を抑える余裕もない。`
+      ]);
+    } else if(hasCowgirl || hasStraddling){
+      caption_ja = pickVariant(seed,[
+        `${subjectText}が自ら腰を落とし、${placeText}奥まで飲み込んでいる。${breastDesc}${emotionDesc}自分で動くたびに快感が跳ね上がる。`,
+        `${placeText}上に乗った${subjectText}が腰を揺らし続けている。${exposedDesc}、もう止まれない。`,
+        `${subjectText}が主導権を握ったまま${placeText}絶頂へ向かっている。${breastDesc}${emotionDesc}体が勝手に動いている。`
+      ]);
+    } else if(hasKiss){
+      caption_ja = pickVariant(seed,[
+        `${subjectText}が${placeText}深いキスをしながら、下半身も同時に責められている。${exposedDesc}、思考が奪われていく。`,
+        `唇を重ねたまま${subjectText}は感じさせられている。${placeText}${emotionDesc}声にならない声が漏れている。`,
+        `${subjectText}のキスと、その先に続く行為。${placeText}${breastDesc}体も心も隙がない。`
+      ]);
+    } else {
+      caption_ja = pickVariant(seed,[
+        `${subjectText}が${placeText}${exposedDesc || '全てを晒して'}、${emotionDesc || '快感に溺れている'}。`,
+        `${placeText}${subjectText}は${emotionDesc || 'もう理性を手放して'}、${breastDesc || ''}乱れている。`,
+        `${subjectText}の${emotionDesc || ''}乱れた姿が${placeText}そのままになっている。${exposedDesc}。`
       ]);
     }
   } else {
-    caption_ja = pickVariant(seed,[
-      `${subjectText}が${placeText}${emotionText || 'じっとしている'}。`,
-      `${placeText||''}${subjectText}は${emotionText || 'おだやかな表情をしている'}。`,
-      `${subjectText}の${emotionText || 'やわらかな雰囲気'}が伝わってくる。`
-    ]);
-    if(hasAnyTag(tags,['kiss','french_kiss']))caption_ja += pickVariant(seed+3,[' 近い距離に、温かさが滲んでいる。',' 息づかいまで聞こえそうな距離感だ。',' 表情に熱っぽさが漂っている。']);
+    const emotionDesc = emotion === '嬉しそう' ? '笑顔を見せている' : emotion === '照れながら感じてる' ? '照れた様子で' : emotion === 'こっちを見てる' ? 'こちらを見つめている' : emotion === '振り向きながら誘ってる' ? '振り向きながら' : '';
+    const kissDesc = hasAnyTag(tags,['kiss','french_kiss']);
+    if(kissDesc){
+      caption_ja = pickVariant(seed,[
+        `${subjectText}が${placeText}キスをしている。近い距離に温かさが滲んでいる。`,
+        `${placeText}${subjectText}は唇を重ねている。${emotionDesc ? emotionDesc + '、' : ''}息づかいまで聞こえそうな距離感だ。`,
+        `${subjectText}のキスシーン。${placeText}${emotionDesc || '穏やかな表情'}が印象的だ。`
+      ]);
+    } else {
+      caption_ja = pickVariant(seed,[
+        `${subjectText}が${placeText}${emotionDesc || 'たたずんでいる'}。`,
+        `${placeText}${subjectText}は${emotionDesc || 'おだやかな表情をしている'}。`,
+        `${subjectText}の${emotionDesc || 'やわらかな雰囲気'}が伝わってくる。`
+      ]);
+    }
   }
   if(!caption_ja.trim())caption_ja = `${title_ja}。`;
 
