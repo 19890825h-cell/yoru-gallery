@@ -639,9 +639,13 @@ const WD14_MODEL = 'SmilingWolf/wd-v1-4-moat-tagger-v2';
 const UPLOAD_URL=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 const WD14_SPACE_ID = 'SmilingWolf/wd-tagger';
 const WD14_GENERAL_THRESHOLD = 0.35;
-const WD14_CHARACTER_THRESHOLD = 0.85;
+const WD14_CHARACTER_THRESHOLD = 0.72;
 const WD14_MAX_TAGS = 20;
+const CLIP_MODEL = 'openai/clip-vit-large-patch14-336';
+const CLIP_WORK_THRESHOLD = 0.22;
+const CLIP_RECENT_WORK_BONUS = 0.06;
 let wd14ClientPromise = null;
+let clipClientPromise = null;
 let bulkRetagState = null;
 let autoTagTimer = null;
 let autoTagInFlightIds = new Set();
@@ -760,11 +764,12 @@ function schedulePendingAutoTagging(){
       try{
         const tags=await tagWithWD14AfterUpload(null,img.url);
         if(tags.length){
-          const autoMeta=buildAutoTaggingState(img,tags);
+          const autoMeta=await buildResolvedTaggingState(img,tags,img.url);
           img.tags=tags;
           img.nsfw=autoMeta.nsfw;
+          img.work_hint=autoMeta.work_hint||'';
           Object.assign(img,autoMeta.meta);
-          await updateImg(img.firestoreId,{tags,nsfw:img.nsfw,...autoMeta.meta});
+          await updateImg(img.firestoreId,{tags,nsfw:img.nsfw,work_hint:img.work_hint,...autoMeta.meta});
         }
       }catch(err){
         console.warn('[YORU] deferred auto-tagging failed:', err?.message || err);
@@ -790,15 +795,16 @@ async function handleFiles(files){
     le.textContent=`アップロード中... ${done+1}/${files.length}`;
     try{
       const url=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
-      const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[],title_ja:'',caption_ja:'',dialogue_ja:'',nsfw_summary_ja:''};
+      const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[],work_hint:'',title_ja:'',caption_ja:'',dialogue_ja:'',nsfw_summary_ja:''};
       if(HF_TOKEN){
         le.textContent=`タグ付け中... ${done+1}/${files.length}`;
         try{
           const tags=await tagWithWD14AfterUpload(file,url);
           if(tags.length){
-            const autoMeta=buildAutoTaggingState(data,tags);
+            const autoMeta=await buildResolvedTaggingState(data,tags,file||url);
             data.tags=tags;
             data.nsfw=autoMeta.nsfw;
+            data.work_hint=autoMeta.work_hint||'';
             Object.assign(data,autoMeta.meta);
           }
         }catch(err){
@@ -820,6 +826,14 @@ async function getWd14Client(){
       .then(async ({ Client }) => Client.connect(WD14_SPACE_ID, HF_TOKEN ? { hf_token: HF_TOKEN } : {}));
   }
   return wd14ClientPromise;
+}
+
+async function getClipClient(){
+  if(!clipClientPromise){
+    clipClientPromise = import('https://cdn.jsdelivr.net/npm/@huggingface/inference/+esm')
+      .then(({ InferenceClient }) => new InferenceClient(HF_TOKEN || undefined));
+  }
+  return clipClientPromise;
 }
 
 function normalizeWd14Tag(tag){
@@ -1003,8 +1017,236 @@ const EXTRA_TAG_LABELS_JA = {
 };
 
 const EXTRA_WORK_LABELS_JA = {
+  'lycoris_recoil':'リコリス・リコイル',
   'umamusume':'ウマ娘 プリティーダービー',
-  'umamusume_pretty_derby':'ウマ娘 プリティーダービー'
+  'umamusume_pretty_derby':'ウマ娘 プリティーダービー',
+  'my_hero_academia':'僕のヒーローアカデミア',
+  'boku_no_hero_academia':'僕のヒーローアカデミア',
+  'gotoubun_no_hanayome':'五等分の花嫁',
+  'go_toubun_no_hanayome':'五等分の花嫁',
+  'kaguya-sama_wa_kokurasetai':'かぐや様は告らせたい',
+  'kaguya_sama_wa_kokurasetai':'かぐや様は告らせたい',
+  'sword_art_online':'ソードアート・オンライン',
+  'toaru_kagaku_no_railgun':'とある科学の超電磁砲',
+  'toaru_majutsu_no_index':'とある魔術の禁書目録',
+  'oregairu':'やはり俺の青春ラブコメはまちがっている。',
+  'yahari_ore_no_seishun_lovecome_wa_machigatteiru':'やはり俺の青春ラブコメはまちがっている。',
+  'seishun_buta_yarou':'青春ブタ野郎',
+  'rascal_does_not_dream_of_bunny_girl_senpai':'青春ブタ野郎',
+  'gochuumon_wa_usagi_desu_ka':'ご注文はうさぎですか？',
+  'gochiusa':'ご注文はうさぎですか？',
+  'code_geass':'コードギアス',
+  'mobile_suit_gundam':'機動戦士ガンダム',
+  'gundam':'ガンダムシリーズ',
+  'mobile_suit_gundam_the_witch_from_mercury':'機動戦士ガンダム 水星の魔女',
+  'the_witch_from_mercury':'機動戦士ガンダム 水星の魔女',
+  'gundam_seed':'機動戦士ガンダムSEED',
+  'gundam_seed_destiny':'機動戦士ガンダムSEED DESTINY',
+  'gundam_wing':'新機動戦記ガンダムW',
+  'gundam_00':'機動戦士ガンダム00',
+  'gundam_unicorn':'機動戦士ガンダムUC',
+  'zeta_gundam':'機動戦士Zガンダム',
+  'gquuuuuux':'機動戦士Gundam GQuuuuuuX（ジークアクス）',
+  'mobile_suit_gundam_gquuuuuux':'機動戦士Gundam GQuuuuuuX（ジークアクス）',
+  'k-on!':'けいおん！',
+  'k_on!':'けいおん！',
+  'k_on':'けいおん！',
+  'madoka_magica':'魔法少女まどか☆マギカ',
+  'mahou_shoujo_madoka_magica':'魔法少女まどか☆マギカ',
+  'monogatari':'物語シリーズ',
+  'monogatari_series':'物語シリーズ',
+  'hololive':'ホロライブ',
+  'nijisanji':'にじさんじ',
+  'blue_lock':'ブルーロック',
+  'haikyuu!!':'ハイキュー!!',
+  'haikyuu!':'ハイキュー!!',
+  'haikyuu':'ハイキュー!!',
+  'attack_on_titan':'進撃の巨人',
+  'shingeki_no_kyojin':'進撃の巨人',
+  'fullmetal_alchemist':'鋼の錬金術師',
+  'hagane_no_renkinjutsushi':'鋼の錬金術師',
+  'hunter_x_hunter':'HUNTER×HUNTER',
+  'jojo_no_kimyou_na_bouken':'ジョジョの奇妙な冒険',
+  'gintama':'銀魂',
+  'bunny_girl_senpai':'青春ブタ野郎',
+  'the_quintessential_quintuplets':'五等分の花嫁',
+  'frieren_beyond_journeys_end':'葬送のフリーレン',
+  'sousou_no_frieren':'葬送のフリーレン',
+  'rezero':'Re:ゼロから始める異世界生活',
+  're_zero_kara_hajimeru_isekai_seikatsu':'Re:ゼロから始める異世界生活',
+  'evangelion':'新世紀エヴァンゲリオン',
+  'nge':'新世紀エヴァンゲリオン',
+  'kan_colle':'艦隊これくしょん',
+  'kancolle':'艦隊これくしょん',
+  'fgo':'Fate/Grand Order',
+  'fate_go':'Fate/Grand Order',
+  'fsn':'Fate/stay night',
+  'pocket_monsters':'ポケットモンスター',
+  'precure_series':'プリキュア',
+  'love_live!':'ラブライブ！',
+  'bang_dream!':'BanG Dream!',
+  'project_sekai_colorful_stage!':'プロジェクトセカイ',
+  'kimetsu_no_yaiba':'鬼滅の刃',
+  'demon_slayer':'鬼滅の刃'
+};
+
+const WORK_KEY_ALIASES = {
+  'uma_musume':'umamusume',
+  'uma_musume_pretty_derby':'umamusume_pretty_derby',
+  'lycoreco':'lycoris_recoil',
+  'bokunoheroacademia':'my_hero_academia',
+  'bnha':'my_hero_academia',
+  'boku_no_hero_academia':'my_hero_academia',
+  'go_toubun_no_hanayome':'gotoubun_no_hanayome',
+  'the_quintessential_quintuplets':'gotoubun_no_hanayome',
+  'kaguya_sama_wa_kokurasetai':'kaguya-sama_wa_kokurasetai',
+  'rascal_does_not_dream_of_bunny_girl_senpai':'seishun_buta_yarou',
+  'bunny_girl_senpai':'seishun_buta_yarou',
+  'sousou_no_frieren':'frieren',
+  'frieren_beyond_journeys_end':'frieren',
+  'rezero':'re_zero',
+  're_zero_kara_hajimeru_isekai_seikatsu':'re_zero',
+  'evangelion':'neon_genesis_evangelion',
+  'nge':'neon_genesis_evangelion',
+  'witch_from_mercury':'mobile_suit_gundam_the_witch_from_mercury',
+  'g_witch':'mobile_suit_gundam_the_witch_from_mercury',
+  'gundam_wfm':'mobile_suit_gundam_the_witch_from_mercury',
+  'seed':'gundam_seed',
+  'seed_destiny':'gundam_seed_destiny',
+  'gundamseed':'gundam_seed',
+  'gundamseeddestiny':'gundam_seed_destiny',
+  'gundamwing':'gundam_wing',
+  'wing':'gundam_wing',
+  'gundam00':'gundam_00',
+  'double_o':'gundam_00',
+  'gundamuc':'gundam_unicorn',
+  'unicorn_gundam':'gundam_unicorn',
+  'zetagundam':'zeta_gundam',
+  'gquuuuuux':'mobile_suit_gundam_gquuuuuux',
+  'gundam_gquuuuuux':'mobile_suit_gundam_gquuuuuux',
+  'zeekaxis':'mobile_suit_gundam_gquuuuuux',
+  'kan_colle':'kantai_collection',
+  'kancolle':'kantai_collection',
+  'fgo':'fate_grand_order',
+  'fate_go':'fate_grand_order',
+  'fsn':'fate_stay_night',
+  'pocket_monsters':'pokemon',
+  'demon_slayer':'kimetsu_no_yaiba',
+  'bang_dream!':'bang_dream',
+  'project_sekai_colorful_stage!':'project_sekai',
+  'haikyuu!':'haikyuu!!',
+  'haikyuu':'haikyuu!!'
+};
+
+const NON_SERIES_QUALIFIERS = new Set([
+  'place','object','style','clothing','weapon','animal','meme','symbol','pose','expression',
+  'artist','company','logo','background','food','drink','vehicle','bird','flower','fruit',
+  'body','hair','eyes','mouth','face','uniform','outfit','cosplay'
+]);
+
+const CLIP_WORK_CANDIDATES = [
+  { key:'mobile_suit_gundam', label:'Mobile Suit Gundam anime' },
+  { key:'gundam', label:'Gundam anime series' },
+  { key:'mobile_suit_gundam_gquuuuuux', label:'Mobile Suit Gundam GQuuuuuuX anime' },
+  { key:'mobile_suit_gundam_the_witch_from_mercury', label:'Mobile Suit Gundam The Witch from Mercury anime' },
+  { key:'lycoris_recoil', label:'Lycoris Recoil anime' },
+  { key:'umamusume', label:'Uma Musume Pretty Derby anime' },
+  { key:'bocchi_the_rock', label:'Bocchi the Rock anime' },
+  { key:'spy_x_family', label:'SPY x FAMILY anime' },
+  { key:'chainsaw_man', label:'Chainsaw Man anime' },
+  { key:'jujutsu_kaisen', label:'Jujutsu Kaisen anime' },
+  { key:'kimetsu_no_yaiba', label:'Demon Slayer anime' },
+  { key:'oshi_no_ko', label:'Oshi no Ko anime' },
+  { key:'frieren', label:'Frieren anime' },
+  { key:'dandadan', label:'Dandadan anime' },
+  { key:'re_zero', label:'Re Zero anime' },
+  { key:'neon_genesis_evangelion', label:'Neon Genesis Evangelion anime' },
+  { key:'blue_archive', label:'Blue Archive anime style' },
+  { key:'fate_grand_order', label:'Fate Grand Order anime style' },
+  { key:'fate_stay_night', label:'Fate Stay Night anime' },
+  { key:'pokemon', label:'Pokemon anime' },
+  { key:'vocaloid', label:'Vocaloid character art' },
+  { key:'toaru_kagaku_no_railgun', label:'A Certain Scientific Railgun anime' },
+  { key:'toaru_majutsu_no_index', label:'A Certain Magical Index anime' },
+  { key:'my_hero_academia', label:'My Hero Academia anime' },
+  { key:'gotoubun_no_hanayome', label:'The Quintessential Quintuplets anime' },
+  { key:'kaguya-sama_wa_kokurasetai', label:'Kaguya-sama Love Is War anime' },
+  { key:'sword_art_online', label:'Sword Art Online anime' },
+  { key:'gochuumon_wa_usagi_desu_ka', label:'Is the Order a Rabbit anime' },
+  { key:'madoka_magica', label:'Puella Magi Madoka Magica anime' },
+  { key:'monogatari', label:'Monogatari anime series' },
+  { key:'hololive', label:'Hololive VTuber character art' },
+  { key:'nijisanji', label:'Nijisanji VTuber character art' }
+];
+
+const CLIP_RECENT_WORK_KEYS = new Set([
+  'mobile_suit_gundam_gquuuuuux',
+  'mobile_suit_gundam_the_witch_from_mercury',
+  'dandadan',
+  'frieren',
+  'oshi_no_ko',
+  'bocchi_the_rock',
+  'chainsaw_man'
+]);
+
+const CHARACTER_WORK_FALLBACKS = {
+  'nishikigi_chisato':'lycoris_recoil',
+  'inoue_takina':'lycoris_recoil',
+  'frieren':'frieren',
+  'hoshino_ai':'oshi_no_ko',
+  'hoshino_ruby':'oshi_no_ko',
+  'hoshino_aqua':'oshi_no_ko',
+  'kana_arima':'oshi_no_ko',
+  'kurokawa_akane_(oshi_no_ko)':'oshi_no_ko',
+  'yor_forger':'spy_x_family',
+  'anya_forger':'spy_x_family',
+  'makima':'chainsaw_man',
+  'power':'chainsaw_man',
+  'marin_kitagawa':'my_dress-up_darling',
+  'gojou_satoru':'jujutsu_kaisen',
+  'shinobu_kocho':'kimetsu_no_yaiba',
+  'kamado_nezuko':'kimetsu_no_yaiba',
+  'kamado_tanjirou':'kimetsu_no_yaiba',
+  'ikuyo_kita':'bocchi_the_rock',
+  'gotou_hitori':'bocchi_the_rock',
+  'ijichi_nijika':'bocchi_the_rock',
+  'yamada_ryou':'bocchi_the_rock',
+  'amuro_ray':'mobile_suit_gundam',
+  'char_aznable':'mobile_suit_gundam',
+  'sayla_mass':'mobile_suit_gundam',
+  'kamille_bidan':'zeta_gundam',
+  'fa_yuiry':'zeta_gundam',
+  'four_murasame':'zeta_gundam',
+  'relena_peacecraft':'gundam_wing',
+  'heero_yuy':'gundam_wing',
+  'duo_maxwell':'gundam_wing',
+  'kira_yamato':'gundam_seed',
+  'lacus_clyne':'gundam_seed',
+  'cagalli_yula_athha':'gundam_seed',
+  'athrun_zala':'gundam_seed',
+  'shinn_asuka':'gundam_seed_destiny',
+  'lunamaria_hawke':'gundam_seed_destiny',
+  'meyrin_hawke':'gundam_seed_destiny',
+  'stella_loussier':'gundam_seed_destiny',
+  'suletta_mercury':'mobile_suit_gundam_the_witch_from_mercury',
+  'miorine_rembran':'mobile_suit_gundam_the_witch_from_mercury',
+  'guel_jeturk':'mobile_suit_gundam_the_witch_from_mercury',
+  'prospera_mercury':'mobile_suit_gundam_the_witch_from_mercury',
+  'marida_cruz':'gundam_unicorn',
+  'banagher_links':'gundam_unicorn',
+  'setsuna_f_seiei':'gundam_00',
+  'tieria_erde':'gundam_00',
+  'lockon_stratos':'gundam_00',
+  'allelujah_haptism':'gundam_00',
+  'amate_yuzuriha':'mobile_suit_gundam_gquuuuuux',
+  'machu':'mobile_suit_gundam_gquuuuuux',
+  'nyaan':'mobile_suit_gundam_gquuuuuux',
+  'shuji_itou':'mobile_suit_gundam_gquuuuuux',
+  'hatsune_miku':'vocaloid',
+  'megurine_luka':'vocaloid',
+  'kagamine_rin':'vocaloid',
+  'kagamine_len':'vocaloid',
+  'ia_(vocaloid)':'vocaloid'
 };
 
 const EXTRA_CHARACTER_LABELS_JA = {
@@ -1067,8 +1309,38 @@ function prettifyTagText(text){
   return titleCaseLabel(String(text || '').replace(/-/g,'_'));
 }
 
+function normalizeWorkKey(work){
+  const key = String(work || '').trim().toLowerCase();
+  return WORK_KEY_ALIASES[key] || key;
+}
+
+function isKnownWorkKey(work){
+  const normalized = normalizeWorkKey(work);
+  return !!(
+    EXTRA_WORK_LABELS_JA[normalized] ||
+    WORK_LABELS_JA[normalized] ||
+    EXTRA_WORK_LABELS_JA[String(work || '').trim()] ||
+    WORK_LABELS_JA[String(work || '').trim()]
+  );
+}
+
+function isLikelyCharacterWorkTag(characterKey, workKey, rawTag){
+  if(isKnownWorkKey(workKey)) return true;
+  if(EXTRA_CHARACTER_LABELS_JA[rawTag] || CHARACTER_LABELS_JA[rawTag]) return true;
+  const normalizedWork = normalizeWorkKey(workKey);
+  const normalizedCharacter = String(characterKey || '').trim().toLowerCase();
+  if(!normalizedWork || !normalizedCharacter) return false;
+  if(NON_SERIES_QUALIFIERS.has(normalizedWork)) return false;
+  if(EXTRA_TAG_LABELS_JA[rawTag] || TAG_LABELS_JA[rawTag]) return false;
+  if(normalizedWork.length < 4 || normalizedCharacter.length < 3) return false;
+  if(!normalizedCharacter.includes('_')) return false;
+  if(/^(highres|commentary|translation|official|sample|alternate|variant)$/.test(normalizedWork)) return false;
+  return /^[a-z0-9_!+\-]+$/.test(normalizedWork);
+}
+
 function formatWorkLabel(work){
-  return EXTRA_WORK_LABELS_JA[work] || WORK_LABELS_JA[work] || prettifyTagText(work);
+  const normalized = normalizeWorkKey(work);
+  return EXTRA_WORK_LABELS_JA[normalized] || WORK_LABELS_JA[normalized] || EXTRA_WORK_LABELS_JA[work] || WORK_LABELS_JA[work] || prettifyTagText(normalized || work);
 }
 
 function formatCharacterLabel(character, rawTag){
@@ -1078,36 +1350,68 @@ function formatCharacterLabel(character, rawTag){
 function parseCharacterWork(tag){
   const match = String(tag || '').match(/^(.*)_\(([^()]+)\)$/);
   if(!match)return null;
-  const workKey = match[2];
+  const workKey = normalizeWorkKey(match[2]);
+  const characterKey = String(match[1] || '').trim().toLowerCase();
   const rawTag = String(tag || '');
-  const looksLikeSeries =
-    !!EXTRA_WORK_LABELS_JA[workKey] ||
-    !!WORK_LABELS_JA[workKey] ||
-    !!EXTRA_CHARACTER_LABELS_JA[rawTag] ||
-    !!CHARACTER_LABELS_JA[rawTag];
+  const looksLikeSeries = isLikelyCharacterWorkTag(characterKey, workKey, rawTag);
   if(!looksLikeSeries)return null;
   return {
     raw: tag,
-    character: match[1],
+    character: characterKey,
     work: workKey
   };
 }
 
-function formatTagLabel(tag){
+function inferWorkFromCharacterTag(tag){
+  const key = String(tag || '').trim().toLowerCase();
+  const rawFallback = CHARACTER_WORK_FALLBACKS[key];
+  if(rawFallback)return normalizeWorkKey(rawFallback);
+  return null;
+}
+
+function getCharacterWorkInfo(tag){
   const parsed = parseCharacterWork(tag);
+  if(parsed)return parsed;
+  const inferredWork = inferWorkFromCharacterTag(tag);
+  if(!inferredWork)return null;
+  const characterKey = String(tag || '').trim().toLowerCase();
+  return {
+    raw: tag,
+    character: characterKey,
+    work: inferredWork,
+    inferred: true
+  };
+}
+
+function hasResolvedWork(tags, workHint){
+  if(workHint)return true;
+  return (tags||[]).some(tag=>!!getCharacterWorkInfo(tag));
+}
+
+function deriveWorkHintFromTags(tags){
+  for(const tag of tags||[]){
+    const parsed=getCharacterWorkInfo(tag);
+    if(parsed)return parsed.work;
+  }
+  return '';
+}
+
+function formatTagLabel(tag){
+  const parsed = getCharacterWorkInfo(tag);
   if(parsed){
-    return `${formatCharacterLabel(parsed.character, parsed.raw)} / ${formatWorkLabel(parsed.work)}`;
+    return `${formatWorkLabel(parsed.work)} / ${formatCharacterLabel(parsed.character, parsed.raw)}`;
   }
   return EXTRA_TAG_LABELS_JA[tag] || TAG_LABELS_JA[tag] || prettifyTagText(tag);
 }
 
 function formatEntityLabel(name){
-  return EXTRA_WORK_LABELS_JA[name] || WORK_LABELS_JA[name] || EXTRA_TAG_LABELS_JA[name] || TAG_LABELS_JA[name] || prettifyTagText(name);
+  const normalized = normalizeWorkKey(name);
+  return EXTRA_WORK_LABELS_JA[normalized] || WORK_LABELS_JA[normalized] || EXTRA_TAG_LABELS_JA[name] || TAG_LABELS_JA[name] || prettifyTagText(normalized || name);
 }
 
-function pickCharacterAndWork(tags){
+function pickCharacterAndWork(tags, workHint=''){
   for(const tag of tags||[]){
-    const parsed=parseCharacterWork(tag);
+    const parsed=getCharacterWorkInfo(tag);
     if(parsed){
       return {
         character: formatCharacterLabel(parsed.character, parsed.raw),
@@ -1115,7 +1419,22 @@ function pickCharacterAndWork(tags){
       };
     }
   }
-  return { character:'', work:'' };
+  return { character:'', work: workHint ? formatWorkLabel(workHint) : '' };
+}
+
+function sortTagsForDisplay(tags){
+  return [...(tags||[])].sort((a,b)=>{
+    const parsedA=getCharacterWorkInfo(a);
+    const parsedB=getCharacterWorkInfo(b);
+    if(parsedA && !parsedB) return -1;
+    if(!parsedA && parsedB) return 1;
+    if(parsedA && parsedB){
+      const workCompare=formatWorkLabel(parsedA.work).localeCompare(formatWorkLabel(parsedB.work),'ja');
+      if(workCompare!==0)return workCompare;
+      return formatCharacterLabel(parsedA.character, parsedA.raw).localeCompare(formatCharacterLabel(parsedB.character, parsedB.raw),'ja');
+    }
+    return formatTagLabel(a).localeCompare(formatTagLabel(b),'ja');
+  });
 }
 
 function firstMatchingLabel(tags, keys){
@@ -1129,7 +1448,7 @@ function hasAnyTag(tags, keys){
 
 function resolveVoiceStyle(tags, character, work){
   for(const tag of tags||[]){
-    const parsed=parseCharacterWork(tag);
+    const parsed=getCharacterWorkInfo(tag);
     if(!parsed)continue;
     const formattedCharacter=formatCharacterLabel(parsed.character, parsed.raw);
     return CHARACTER_VOICE_STYLES[parsed.raw] ||
@@ -1233,7 +1552,7 @@ function applyVoiceStyle(line, style, seed){
 
 function generateJapaneseMetadata(image){
   const tags=image.tags||[];
-  const { character, work } = pickCharacterAndWork(tags);
+  const { character, work } = pickCharacterAndWork(tags, image.work_hint || '');
   const voiceStyle=resolveVoiceStyle(tags, character, work);
   const rawName=String(image.name||'').trim();
   const generatedName=/^_?\d{8,}$/.test(rawName);
@@ -1459,6 +1778,62 @@ function buildAutoTaggingState(image,tags){
   return { nsfw, meta };
 }
 
+async function inferWorkWithClip(imageInput,tags=[]){
+  try{
+    if(!HF_TOKEN || hasResolvedWork(tags,''))return '';
+    const { candidate_labels, labelToKey } = CLIP_WORK_CANDIDATES.reduce((acc,item)=>{
+      acc.candidate_labels.push(item.label);
+      acc.labelToKey[item.label]=item.key;
+      return acc;
+    },{ candidate_labels:[], labelToKey:{} });
+    const client = await getClipClient();
+    const result = await client.zeroShotImageClassification({
+      model: CLIP_MODEL,
+      inputs: imageInput,
+      candidate_labels
+    });
+    const ranked = Array.isArray(result) ? result : [];
+    const boosted = ranked.map(item=>{
+      const key = normalizeWorkKey(labelToKey[item.label] || '');
+      const score = Number(item.score||0) + (CLIP_RECENT_WORK_KEYS.has(key) ? CLIP_RECENT_WORK_BONUS : 0);
+      return { ...item, boostedScore: score, resolvedKey: key };
+    });
+    const top = boosted.sort((a,b)=>Number(b.boostedScore||0)-Number(a.boostedScore||0))[0];
+    if(!top || Number(top.boostedScore||0) < CLIP_WORK_THRESHOLD)return '';
+    return normalizeWorkKey(top.resolvedKey || '');
+  }catch(err){
+    console.warn('[YORU] CLIP work inference failed:', err?.message || err);
+    return '';
+  }
+}
+
+async function buildResolvedTaggingState(image,tags,imageInput){
+  let workHint=image.work_hint||'';
+  if(!hasResolvedWork(tags, workHint)){
+    workHint = await inferWorkWithClip(imageInput, tags);
+  }
+  const autoMeta=buildAutoTaggingState({...image, work_hint:workHint}, tags);
+  return { ...autoMeta, work_hint: workHint };
+}
+
+function buildClearedTaggingState(){
+  return {
+    tags: [],
+    work_hint: '',
+    nsfw: false,
+    title_ja: '',
+    caption_ja: '',
+    dialogue_ja: '',
+    nsfw_summary_ja: ''
+  };
+}
+
+async function resetImageTaggingState(img){
+  const cleared=buildClearedTaggingState();
+  Object.assign(img, cleared);
+  await updateImg(img.firestoreId, cleared);
+}
+
 function hashText(text){
   const value=String(text||'');
   let h=0;
@@ -1551,6 +1926,7 @@ window.setHfToken=function(){
   const v=prompt('HuggingFace APIトークンを入力（https://huggingface.co/settings/tokens）:',HF_TOKEN);
   if(v===null)return;HF_TOKEN=v.trim();localStorage.setItem('yoru-hf-token',HF_TOKEN);
   wd14ClientPromise = null;
+  clipClientPromise = null;
   showToast(HF_TOKEN?'✓ HFトークン設定完了':'⚠ トークンをクリアしました');
 };
 
@@ -1589,13 +1965,15 @@ async function runBulkRetag(targets,modeText){
       }
       const img=targets[i];
       showToast(`🏷 ${modeText} ${i+1}/${targets.length}`,1800);
+      await resetImageTaggingState(img);
       const tags=await tagWithWD14(img.url);
       if(tags.length){
         img.tags=tags;
-        const autoMeta=buildAutoTaggingState(img,tags);
+        const autoMeta=await buildResolvedTaggingState(img,tags,img.url);
         img.nsfw=autoMeta.nsfw;
+        img.work_hint=autoMeta.work_hint||'';
         Object.assign(img,autoMeta.meta);
-        await updateImg(img.firestoreId,{tags,nsfw:img.nsfw,...autoMeta.meta});
+        await updateImg(img.firestoreId,{tags,nsfw:img.nsfw,work_hint:img.work_hint,...autoMeta.meta});
         success++;
       }else{
         failed++;
@@ -1637,12 +2015,14 @@ window.retagFromModal=async function(){
   const btn=document.getElementById('modal-retag-btn');btn.textContent='🔄';btn.disabled=true;
   try{
     showToast('🏷 タグ付け中...',5000);
+    await resetImageTaggingState(img);
     const tags=await tagWithWD14(img.url);
     img.tags=tags;
-    const autoMeta=buildAutoTaggingState(img,tags);
+    const autoMeta=await buildResolvedTaggingState(img,tags,img.url);
     img.nsfw=autoMeta.nsfw;
+    img.work_hint=autoMeta.work_hint||'';
     Object.assign(img,autoMeta.meta);
-    await updateImg(currentModalId,{tags,nsfw:img.nsfw,...autoMeta.meta});
+    await updateImg(currentModalId,{tags,nsfw:img.nsfw,work_hint:img.work_hint,...autoMeta.meta});
     renderModalTags(img);
     showToast(`✓ ${tags.length}個のタグを付けました`);
   }catch(e){showToast(`⚠ タグ付け失敗: ${e.message}`);}
@@ -1722,7 +2102,10 @@ function getSorted(){
   }
   if(filterTag==='fav')list=list.filter(i=>i.fav);
   if(activeTag)list=list.filter(i=>(i.tags||[]).includes(activeTag));
-  if(activeWork)list=list.filter(i=>(i.tags||[]).some(tag=>{const parsed=parseCharacterWork(tag);return parsed&&parsed.work===activeWork;}));
+  if(activeWork)list=list.filter(i=>{
+    if(normalizeWorkKey(i.work_hint||'')===activeWork)return true;
+    return (i.tags||[]).some(tag=>{const parsed=getCharacterWorkInfo(tag);return parsed&&parsed.work===activeWork;});
+  });
   // ソート
   if(sortMode==='new')list.sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(sortMode==='name')list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
@@ -1822,7 +2205,7 @@ function buildItemHtml(img,blurNsfw,index=0){
       <rect class="ring-stroke" x="4" y="4" width="92" height="124" rx="18" ry="18"></rect>
     </svg>
   </span>`:'';
-  const topTags=(img.tags||[]).slice(0,3).map(t=>`<span class="item-tag" title="${escHtml(t)}">${escHtml(formatTagLabel(t))}</span>`).join('');
+  const topTags=sortTagsForDisplay(img.tags||[]).slice(0,3).map(t=>`<span class="item-tag" title="${escHtml(t)}">${escHtml(formatTagLabel(t))}</span>`).join('');
   const sel=selectedIds.has(img.firestoreId)?'selected':'';
   const display=getDisplayMetadata(img);
   const displayTitle=display.title_ja||img.name;
@@ -1942,7 +2325,7 @@ function renderCharacterCloud(){
   const cloud=document.getElementById('character-cloud');if(!cloud)return;
   const counts={};
   images.forEach(img=>(img.tags||[]).forEach(tag=>{
-    const parsed=parseCharacterWork(tag);
+    const parsed=getCharacterWorkInfo(tag);
     if(parsed){counts[tag]=(counts[tag]||0)+1;}
   }));
   const tags=Object.keys(counts).sort((a,b)=>a.localeCompare(b));
@@ -1953,10 +2336,18 @@ function renderCharacterCloud(){
 function renderWorkCloud(){
   const cloud=document.getElementById('work-cloud');if(!cloud)return;
   const counts={};
-  images.forEach(img=>(img.tags||[]).forEach(tag=>{
-    const parsed=parseCharacterWork(tag);
-    if(parsed){counts[parsed.work]=(counts[parsed.work]||0)+1;}
-  }));
+  images.forEach(img=>{
+    const worksForImage=new Set();
+    (img.tags||[]).forEach(tag=>{
+      const parsed=getCharacterWorkInfo(tag);
+      if(parsed)worksForImage.add(parsed.work);
+    });
+    const hint=normalizeWorkKey(img.work_hint||'');
+    if(hint)worksForImage.add(hint);
+    worksForImage.forEach(work=>{
+      counts[work]=(counts[work]||0)+1;
+    });
+  });
   const works=Object.keys(counts).sort((a,b)=>a.localeCompare(b));
   if(!works.length){cloud.innerHTML='<span style="font-family:\'Space Mono\',monospace;font-size:0.55rem;color:var(--muted);">作品タグなし</span>';return;}
   cloud.innerHTML=works.map(work=>`<button class="index-chip${activeWork===work?' active':''}" onclick='setActiveWork(${JSON.stringify(work)})' title="${escHtml(work)}"><span class="index-name">${escHtml(formatEntityLabel(work))}</span><span class="index-count">${counts[work]}</span></button>`).join('');
@@ -2081,7 +2472,7 @@ function renderFocusLayout(list){
     <button class="action-btn" onclick="openModal('${img.firestoreId}')" title="フルスクリーン">⤢</button>
     <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)" title="削除">✕</button>
   `;
-  document.getElementById('focus-info-tags').innerHTML=(img.tags||[]).map(t=>`<span class="modal-tag" onclick='setActiveTag(${JSON.stringify(t)})' title="${escHtml(t)}">${escHtml(formatTagLabel(t))}</span>`).join('');
+  document.getElementById('focus-info-tags').innerHTML=sortTagsForDisplay(img.tags||[]).map(t=>`<span class="modal-tag" onclick='setActiveTag(${JSON.stringify(t)})' title="${escHtml(t)}">${escHtml(formatTagLabel(t))}</span>`).join('');
 }
 
 window.focusSelect=function(idx){focusIndex=idx;if(focusMode)renderFocusLayout(getSorted());};
@@ -2210,7 +2601,7 @@ window.openModal=function(id){
 // ===== TAG EDIT (4) =====
 function renderModalTags(img){
   const mt=document.getElementById('modal-tags');
-  const tags=img.tags||[];
+  const tags=sortTagsForDisplay(img.tags||[]);
   mt.innerHTML=tags.map(t=>`<span class="modal-tag" onclick='setActiveTag(${JSON.stringify(t)});closeModalDirect();' title="${escHtml(t)}">${escHtml(formatTagLabel(t))}<button class="tag-del" onclick='removeModalTag(event,"${img.firestoreId}",${JSON.stringify(t)})'>✕</button></span>`).join('');
   mt.innerHTML+=`<button class="tag-add-btn" onclick="showTagInput(event,'${img.firestoreId}')">＋タグ追加</button>`;
   updateModalRetagButton(img);
@@ -2219,10 +2610,11 @@ window.removeModalTag=async function(e,id,tag){
   e.stopPropagation();
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
   img.tags=(img.tags||[]).filter(t=>t!==tag);
+  img.work_hint=deriveWorkHintFromTags(img.tags);
   const autoMeta=buildAutoTaggingState(img,img.tags);
   img.nsfw=autoMeta.nsfw;
   Object.assign(img,autoMeta.meta);
-  await updateImg(id,{tags:img.tags,nsfw:img.nsfw,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
+  await updateImg(id,{tags:img.tags,work_hint:img.work_hint,nsfw:img.nsfw,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
   renderModalTags(img);renderTagCloud();showToast(`✕ タグ削除: ${tag}`);
 };
 window.showTagInput=function(e,id){
@@ -2236,10 +2628,11 @@ window.showTagInput=function(e,id){
       const t=inp.value.trim().replace(/ /g,'_');if(!t)return;
       const img=images.find(i=>i.firestoreId===id);if(!img)return;
       img.tags=[...(img.tags||[]).filter(x=>x!==t),t];
+      img.work_hint=deriveWorkHintFromTags(img.tags) || img.work_hint || '';
       const autoMeta=buildAutoTaggingState(img,img.tags);
       img.nsfw=autoMeta.nsfw;
       Object.assign(img,autoMeta.meta);
-      await updateImg(id,{tags:img.tags,nsfw:img.nsfw,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
+      await updateImg(id,{tags:img.tags,work_hint:img.work_hint,nsfw:img.nsfw,title_ja:img.title_ja,caption_ja:img.caption_ja,dialogue_ja:img.dialogue_ja,nsfw_summary_ja:img.nsfw_summary_ja});
       renderModalTags(img);renderTagCloud();showToast(`✓ タグ追加: ${t}`);
     }
     if(ev.key==='Escape'){inp.remove();}
