@@ -1362,36 +1362,69 @@ const EXTRA_CHARACTER_LABELS_JA = {
 };
 
 const CHARACTER_VOICE_STYLES = {
-  'air_groove_(umamusume)':'cool_refined',
-  'エアグルーヴ':'cool_refined',
-  'eishin_flash_(umamusume)':'composed_soft',
-  'エイシンフラッシュ':'composed_soft',
-  'king_halo_(umamusume)':'proud_sweet',
-  'キングヘイロー':'proud_sweet',
-  'narita_taishin_(umamusume)':'shy_sharp',
-  'ナリタタイシン':'shy_sharp',
-  'special_week_(umamusume)':'earnest_soft',
-  'スペシャルウィーク':'earnest_soft',
-  'vodka_(umamusume)':'rough_warm',
-  'ウオッカ':'rough_warm',
-  'daiwa_scarlet_(umamusume)':'confident_sweet',
-  'ダイワスカーレット':'confident_sweet',
-  'gold_ship_(umamusume)':'playful_chaotic',
-  'ゴールドシップ':'playful_chaotic',
-  'nishikigi_chisato_(lycoris_recoil)':'bright_open',
-  'nishikigi_chisato':'bright_open',
-  '錦木千束':'bright_open',
-  'inoue_takina_(lycoris_recoil)':'reserved_gentle',
-  'inoue_takina':'reserved_gentle',
-  '井ノ上たきな':'reserved_gentle'
+  // ===== ウマ娘 =====
+  'air_groove_(umamusume)':'cool_refined',          'エアグルーヴ':'cool_refined',
+  'eishin_flash_(umamusume)':'composed_soft',        'エイシンフラッシュ':'composed_soft',
+  'king_halo_(umamusume)':'proud_sweet',             'キングヘイロー':'proud_sweet',
+  'narita_taishin_(umamusume)':'shy_sharp',          'ナリタタイシン':'shy_sharp',
+  'special_week_(umamusume)':'earnest_soft',         'スペシャルウィーク':'earnest_soft',
+  'vodka_(umamusume)':'rough_warm',                  'ウオッカ':'rough_warm',
+  'daiwa_scarlet_(umamusume)':'confident_sweet',     'ダイワスカーレット':'confident_sweet',
+  'gold_ship_(umamusume)':'playful_chaotic',         'ゴールドシップ':'playful_chaotic',
+  'tokai_teio_(umamusume)':'uma_energetic',          'トウカイテイオー':'uma_energetic',
+  'mejiro_mcqueen_(umamusume)':'uma_elegant',        'メジロマックイーン':'uma_elegant',
+  'silence_suzuka_(umamusume)':'uma_quiet',          'サイレンススズカ':'uma_quiet',
+  'oguri_cap_(umamusume)':'uma_stoic',               'オグリキャップ':'uma_stoic',
+  'rice_shower_(umamusume)':'uma_shy',               'ライスシャワー':'uma_shy',
+  'manhattan_cafe_(umamusume)':'uma_eerie',          'マンハッタンカフェ':'uma_eerie',
+  'symboli_rudolf_(umamusume)':'uma_emperor',        'シンボリルドルフ':'uma_emperor',
+  'mihono_bourbon_(umamusume)':'uma_stoic',          'ミホノブルボン':'uma_stoic',
+  'nice_nature_(umamusume)':'uma_energetic',         'ナイスネイチャ':'uma_energetic',
+  'winning_ticket_(umamusume)':'playful_chaotic',    'ウイニングチケット':'playful_chaotic',
+  'biwa_hayahide_(umamusume)':'composed_soft',       'ビワハヤヒデ':'composed_soft',
+  'super_creek_(umamusume)':'earnest_soft',          'スーパークリーク':'earnest_soft',
+  'tamamo_cross_(umamusume)':'playful_chaotic',      'タマモクロス':'playful_chaotic',
+  'sakura_bakushin_o_(umamusume)':'uma_energetic',   'サクラバクシンオー':'uma_energetic',
+  'seiun_sky_(umamusume)':'bright_open',             'セイウンスカイ':'bright_open',
+  'grass_wonder_(umamusume)':'uma_quiet',            'グラスワンダー':'uma_quiet',
+  'el_condor_pasa_(umamusume)':'bright_open',        'エルコンドルパサー':'bright_open',
+  // ===== ガンダムSEED/DESTINY =====
+  'lacus_clyne':'gundam_princess',                   'ラクス・クライン':'gundam_princess',
+  'lunamaria_hawke':'gundam_soldier',                'ルナマリア・ホーク':'gundam_soldier',
+  'stellar_loussier':'gundam_broken',                'ステラ・ルーシェ':'gundam_broken',
+  'meer_campbell':'gundam_idol',                     'ミーア・キャンベル':'gundam_idol',
+  'murrue_ramius':'gundam_soldier',                  'マリュー・ラミアス':'gundam_soldier',
+  'natarle_badgiruel':'cool_refined',                'ナタル・バジルール':'cool_refined',
+  'flay_allster':'gundam_spoiled',                   'フレイ・アルスター':'gundam_spoiled',
+  'cagalli_yula_athha':'rough_warm',                 'カガリ・ユラ・アスハ':'rough_warm',
+  // ===== ガンダム（他作品）=====
+  'haman_karn':'gundam_tyrant',                      'ハマーン・カーン':'gundam_tyrant',
+  'four_murasame':'gundam_broken',                   'フォウ・ムラサメ':'gundam_broken',
+  'sayla_mass':'composed_soft',                      'セイラ・マス':'composed_soft',
+  'relena_darlian':'gundam_princess',                'リリーナ・ドーリアン':'gundam_princess',
+  'lucrezia_noin':'gundam_soldier',                  'ルクレツィア・ノイン':'gundam_soldier',
+  'dorothy_catalonia':'cool_refined',                'ドロシー・カタロニア':'cool_refined',
+  'marina_ismail':'reserved_gentle',                 'マリナ・イスマイール':'reserved_gentle',
+  'soma_peries':'gundam_soldier',                    'ソーマ・ピーリス':'gundam_soldier',
+  'louise_halevy':'uma_shy',                         'ルイス・ハレヴィ':'uma_shy',
+  'sumeragi_lee_noriega':'confident_sweet',          '春日井スメラギ':'confident_sweet',
+  'feldt_grace':'earnest_soft',                      'フェルト・グレイス':'earnest_soft',
+  // ===== リコリス・リコイル =====
+  'nishikigi_chisato_(lycoris_recoil)':'bright_open','nishikigi_chisato':'bright_open','錦木千束':'bright_open',
+  'inoue_takina_(lycoris_recoil)':'reserved_gentle', 'inoue_takina':'reserved_gentle','井ノ上たきな':'reserved_gentle',
 };
 
 const WORK_VOICE_STYLES = {
   'umamusume':'uma_soft',
   'umamusume_pretty_derby':'uma_soft',
   'ウマ娘 プリティーダービー':'uma_soft',
+  'gundam_seed':'gundam_princess',
+  'gundam_seed_destiny':'gundam_princess',
+  'mobile_suit_gundam_seed':'gundam_princess',
+  'mobile_suit_gundam_seed_destiny':'gundam_princess',
+  'kidou_senshi_gundam_seed':'gundam_princess',
   'lycoris_recoil':'lycoris_soft',
-  'リコリス・リコイル':'lycoris_soft'
+  'リコリス・リコイル':'lycoris_soft',
 };
 
 function titleCaseLabel(text){
@@ -1637,6 +1670,88 @@ function applyVoiceStyle(line, style, seed){
         `${text}。今はこの距離が、ちょうど心地いいですね。`
       ]);
       break;
+    case 'uma_energetic':
+      text=pickVariant(seed,[
+        `${text}！こんなにどきどきするの、はじめてかも！`,
+        `${text}。えへへ、なんか顔が熱くなってきちゃった！`
+      ]);
+      break;
+    case 'uma_elegant':
+      text=text.replace(/君/g,'あなた様');
+      text=pickVariant(seed,[
+        `${text}。メジロの名に懸けて、取り乱すわけにはいきませんわ…でも。`,
+        `${text}。こんなふうに乱れるなど…ですが、止まれませんわ。`
+      ]);
+      break;
+    case 'uma_quiet':
+      text=pickVariant(seed,[
+        `${text}。……悪くない。`,
+        `${text}。……君がそばにいると、落ち着く。`
+      ]);
+      break;
+    case 'uma_stoic':
+      text=pickVariant(seed,[
+        `${text}。……了解した。このまま続ける。`,
+        `${text}。感情の制御が、乱れている。`
+      ]);
+      break;
+    case 'uma_shy':
+      text=pickVariant(seed,[
+        `${text}。わ、わたしなんかが……こんな気持ちになっていいんでしょうか。`,
+        `${text}。迷惑じゃ……ないですよね？`
+      ]);
+      break;
+    case 'uma_eerie':
+      text=pickVariant(seed,[
+        `${text}。……感じます。あなたの、熱を。`,
+        `${text}。……不思議な感覚です。悪くない、です。`
+      ]);
+      break;
+    case 'uma_emperor':
+      text=text.replace(/君/g,'汝');
+      text=pickVariant(seed,[
+        `${text}。余がこれほど乱れるとは……汝だけだ。`,
+        `${text}。皇帝たる余が声を上げるなど……だが、止まれぬ。`
+      ]);
+      break;
+    case 'gundam_princess':
+      text=text.replace(/君/g,'あなた');
+      text=pickVariant(seed,[
+        `${text}。こんなはしたない姿を……でも、あなたになら見せられます。`,
+        `${text}。わたくしがこれほど乱れるなど……止まれませんわ。`
+      ]);
+      break;
+    case 'gundam_soldier':
+      text=pickVariant(seed,[
+        `${text}。任務中にこんな……でも、止まれません。`,
+        `${text}。軍人として恥ずかしいのに……やめたくない。`
+      ]);
+      break;
+    case 'gundam_broken':
+      text=pickVariant(seed,[
+        `${text}……こわい……でも……やめないで。`,
+        `わからない……でも……気持ちいい……${text}`
+      ]);
+      break;
+    case 'gundam_tyrant':
+      text=text.replace(/君/g,'貴様');
+      text=pickVariant(seed,[
+        `${text}。貴様の前でこんな声を上げるなど……許してあげますわ。`,
+        `${text}。わたしを乱すなど……許しませんわよ……でも、止まらないっ。`
+      ]);
+      break;
+    case 'gundam_idol':
+      text=pickVariant(seed,[
+        `${text}。ラクスはこんなこと……でも、あなたの前だから特別よ！`,
+        `${text}。えへへ……こんなわたしも、見ていてくれる？`
+      ]);
+      break;
+    case 'gundam_spoiled':
+      text=pickVariant(seed,[
+        `${text}。わたしのことだけ見ていてよ……ずっと。`,
+        `${text}。あなただけがわたしを……だから離さないで。`
+      ]);
+      break;
     case 'lycoris_soft':
       text=pickVariant(seed,[
         `${text}。近くにいるだけで、ちゃんと伝わる気がする。`,
@@ -1645,6 +1760,139 @@ function applyVoiceStyle(line, style, seed){
       break;
   }
   return text;
+}
+
+// NSFW用キャラクター音声スタイル適用
+function applyNsfwVoiceStyle(dialogue, style, seed){
+  if(!dialogue || !style) return dialogue;
+  const v = (arr) => arr[seed % arr.length];
+  switch(style){
+    // ===== ウマ娘 =====
+    case 'cool_refined':   // エアグルーヴ
+      return v([
+        `わたくしとしたことが…${dialogue}はしたないとわかっていますわ…でも…止まれませんわっ…`,
+        `こんな声を上げるなど…${dialogue}…あなたの前だから…許しますわっ…`
+      ]);
+    case 'proud_sweet':    // ダイワスカーレット
+      return v([
+        `べ、別にっ…${dialogue}き、気持ちいいとか言ってないんだからっ…！`,
+        `あなたに見せてあげてるんだからっ…${dialogue}ちゃんと受け止めなさいよっ…！`
+      ]);
+    case 'playful_chaotic': // ゴールドシップ
+      return v([
+        `ちょ、ゴルシこれはマジでヤバいんやけどっ…${dialogue}もうあかんっ…！`,
+        `うわーっ！${dialogue}ゴルシの限界超えてくるやんっ…！`
+      ]);
+    case 'rough_warm':     // ウオッカ
+      return v([
+        `な、なんだよ…${dialogue}俺がこんな声出すとか…`,
+        `う、うるさいっ…${dialogue}気持ちよすぎてどうしろっつんだっ…`
+      ]);
+    case 'earnest_soft':   // スペシャルウィーク
+      return v([
+        `こんなのはじめてですっ…${dialogue}でも…やめてほしくないですっ…`,
+        `す、すごいですっ…${dialogue}こんなに感じてしまってっ…`
+      ]);
+    case 'composed_soft':  // エイシンフラッシュ
+      return v([
+        `落ち着いていようとしているのに…${dialogue}あなたの前だと…乱れてしまいますね…`,
+        `こんなふうになるのは…${dialogue}…珍しいことです…止まれません…`
+      ]);
+    case 'shy_sharp':      // ナリタタイシン
+      return v([
+        `み、見ないでよっ…${dialogue}…でも…やめないで…`,
+        `こんな顔…見られたくないのに…${dialogue}離れてほしくないっ…`
+      ]);
+    case 'uma_energetic':  // テイオー
+      return v([
+        `うわあっ！${dialogue}こんなにきもちいいの、テイオーはじめてだよっ…！`,
+        `すごいっ…${dialogue}テイオー…もうイきそうっ…！`
+      ]);
+    case 'uma_elegant':    // メジロマックイーン
+      return v([
+        `メジロの名に懸けて取り乱すわけには…${dialogue}…ですが…もう…止まれませんわっ…`,
+        `こんなはしたない声を…${dialogue}…あなただから…許しますわっ…`
+      ]);
+    case 'uma_quiet':      // サイレンススズカ
+      return v([
+        `…${dialogue}…ごめんなさい…声が…出てしまって…`,
+        `…止まれない…${dialogue}…あなたの前だと…素直になってしまう…`
+      ]);
+    case 'uma_stoic':      // オグリキャップ
+      return v([
+        `…感情の制御が…乱れている…${dialogue}…だが…止まれない…`,
+        `…${dialogue}…こういう感覚は…初めてだ…悪くない…`
+      ]);
+    case 'uma_shy':        // ライスシャワー
+      return v([
+        `わ、わたしなんかが…${dialogue}…こんなになっていいんでしょうか…`,
+        `ご、ごめんなさい…${dialogue}…でも…やめないでください…`
+      ]);
+    case 'uma_eerie':      // マンハッタンカフェ
+      return v([
+        `…感じます…あなたの熱を…${dialogue}…不思議と…離れたくない…`,
+        `…${dialogue}…体が…正直に…反応してしまっています…`
+      ]);
+    case 'uma_emperor':    // シンボリルドルフ
+      return v([
+        `余がこれほど乱れるとは…${dialogue}…汝だけだ…許してやろう…`,
+        `皇帝たる余が声を上げるなど…${dialogue}…だが…止まれぬ…`
+      ]);
+    case 'uma_soft':       // ウマ娘汎用
+      return v([
+        `${dialogue}ウマ娘がこんなになってしまうなんて…でも…止まれませんっ…`,
+        `${dialogue}…こんな姿…見せていいのはあなただけですっ…`
+      ]);
+    // ===== ガンダム =====
+    case 'gundam_princess': // ラクス・リリーナ系
+      return v([
+        `こんなはしたない姿を…${dialogue}…でも…あなたになら…止まれませんわ…`,
+        `わたくしがこれほど乱れるなど…${dialogue}…あなただから…許しますわっ…`
+      ]);
+    case 'gundam_soldier':  // ルナマリア・ノイン系
+      return v([
+        `任務中にこんな…${dialogue}…でも…やめられません…`,
+        `軍人として恥ずかしいのに…${dialogue}…体が止まらない…`
+      ]);
+    case 'gundam_broken':   // ステラ・フォウ系
+      return v([
+        `…こわい…でも…${dialogue}…やめないで…`,
+        `わからない…でも…気持ちいい…${dialogue}…いや…もっとして…`
+      ]);
+    case 'gundam_tyrant':   // ハマーン系
+      return v([
+        `貴様の前でこんな声を上げるなど…${dialogue}…許してあげますわっ…`,
+        `わたしを乱すなど…${dialogue}…許しませんわよ…でも…止まらないっ…`
+      ]);
+    case 'gundam_idol':     // ミーア系
+      return v([
+        `ラクスはこんな声…出さないわよ…でも…${dialogue}…もう我慢できないっ…`,
+        `${dialogue}…えへへ…こんなわたしも…見ていてくれる…？`
+      ]);
+    case 'gundam_spoiled':  // フレイ系
+      return v([
+        `${dialogue}…わたしだけを見てよっ…ずっと…`,
+        `あなただけが…${dialogue}…離さないでっ…`
+      ]);
+    // ===== リコリス =====
+    case 'bright_open':     // 千束
+      return v([
+        `うわっ！${dialogue}千束、こんなになるの想定外だったんだけど！`,
+        `えっ、これどうすんの！${dialogue}…もうイきそうなんだけどっ…！`
+      ]);
+    case 'reserved_gentle': // たきな
+      return v([
+        `…${dialogue}…声が…出てしまっています…制御できません…`,
+        `…こんなに乱れるのは…${dialogue}…あなたの前だけです…`
+      ]);
+    case 'lycoris_soft':
+      return v([
+        `${dialogue}…こんな気持ちになるの、初めてかもしれない…`,
+        `…${dialogue}…近くにいてくれると…それだけで…`
+      ]);
+    default:
+      return dialogue;
+  }
 }
 
 function generateJapaneseMetadata(image){
@@ -1986,10 +2234,11 @@ function generateJapaneseMetadata(image){
       );
     }
 
-    const lineA = pickVariant(seed,       poolA);
+    const lineA = pickVariant(seed,        poolA);
     const lineB = pickVariant(seed + 1000, poolB);
     const lineC = pickVariant(seed + 2000, poolC);
-    dialogue_ja = `${lineA}${lineB}${lineC}`;
+    const raw = `${lineA}${lineB}${lineC}`;
+    dialogue_ja = voiceStyle ? applyNsfwVoiceStyle(raw, voiceStyle, seed + 3000) : raw;
   }
 
   const primaryAction=actions[0] || bodyBits[0] || (image.nsfw ? 'エロいことしてる' : firstMatchingLabel(tags,['kiss','lying']) || 'イラスト');
