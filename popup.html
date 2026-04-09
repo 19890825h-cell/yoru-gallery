@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>YORU 設定</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 340px;
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: #0d0d1a;
+      color: #e0d7f5;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1035, #2a1060);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #3a2080;
+    }
+
+    header .logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #c084fc;
+    }
+
+    header .subtitle {
+      font-size: 11px;
+      color: #9370db;
+    }
+
+    .content {
+      padding: 16px 20px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #7c5cbf;
+      margin: 14px 0 8px;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #a89dd0;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 7px 10px;
+      background: #1a1530;
+      border: 1px solid #3a2a60;
+      border-radius: 6px;
+      color: #e0d7f5;
+      font-size: 12px;
+      font-family: 'Consolas', monospace;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #7c3aed;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    button {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.97); }
+
+    #btn-save {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      color: #fff;
+    }
+
+    #btn-reset {
+      background: #2a1a4a;
+      color: #a89dd0;
+      border: 1px solid #3a2a60;
+    }
+
+    #status {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: none;
+    }
+
+    #status.ok {
+      background: #1a3a2a;
+      color: #4ade80;
+      border: 1px solid #2a6040;
+      display: block;
+    }
+
+    #status.err {
+      background: #3a1a1a;
+      color: #f87171;
+      border: 1px solid #602020;
+      display: block;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1e1540;
+      margin: 4px 0;
+    }
+
+    footer {
+      padding: 10px 20px;
+      font-size: 11px;
+      color: #4a3870;
+      text-align: center;
+      border-top: 1px solid #1e1540;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">YORU</div>
+    <div class="subtitle">NovelAI → Cloudinary + Firestore</div>
+  </div>
+</header>
+
+<div class="content">
+
+  <div class="section-title">Cloudinary</div>
+  <div class="field">
+    <label>Cloud Name</label>
+    <input type="text" id="cloudinaryCloudName" placeholder="例: dlab6ddls" />
+  </div>
+  <div class="field">
+    <label>Upload Preset</label>
+    <input type="text" id="cloudinaryUploadPreset" placeholder="例: yoru_gallery" />
+  </div>
+
+  <hr class="divider" />
+
+  <div class="section-title">Firebase / Firestore</div>
+  <div class="field">
+    <label>Project ID</label>
+    <input type="text" id="firebaseProjectId" placeholder="例: databaseaistora" />
+  </div>
+  <div class="field">
+    <label>API Key</label>
+    <input type="text" id="firebaseApiKey" placeholder="AIza..." />
+  </div>
+  <div class="field">
+    <label>コレクション名</label>
+    <input type="text" id="firestoreCollection" placeholder="例: yoru-images" />
+  </div>
+
+  <div class="btn-row">
+    <button id="btn-reset">リセット</button>
+    <button id="btn-save">保存</button>
+  </div>
+
+  <div id="status"></div>
+</div>
+
+<footer>novelai.net の画像を右クリック →「YORUに保存」</footer>
+
+<script src="popup.js"></script>
+</body>
+</html>
