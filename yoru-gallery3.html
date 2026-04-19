@@ -240,13 +240,51 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
 .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),var(--pink));z-index:1;}
 .modal-img-wrap{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg2);position:relative;z-index:1;}
 .modal-img{width:100%;height:100%;object-fit:contain;display:block;}
-.modal-footer{padding:0.75rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;flex-shrink:0;background:var(--surface);padding-bottom:calc(0.75rem + env(safe-area-inset-bottom));}
+.modal-footer{
+  padding:0.75rem 1rem;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;flex-shrink:0;
+  background:var(--surface);
+  padding-bottom:calc(0.75rem + env(safe-area-inset-bottom));
+}
 .modal-footer .action-btn{width:auto;padding:0 0.65rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.05em;}
-.modal-title{font-weight:600;font-size:0.85rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.modal-meta{font-family:'Space Mono',monospace;font-size:0.56rem;color:var(--muted);width:100%;order:3;}
-.modal-dialogue{width:100%;order:4;font-size:0.68rem;line-height:1.55;color:var(--text);font-style:italic;border-left:2px solid rgba(80,190,180,0.4);padding-left:0.6rem;}
-.modal-close{position:absolute;top:0.65rem;right:0.65rem;background:rgba(7,7,15,0.82);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.88rem;border-radius:var(--r-md);z-index:10;transition:all 0.18s;backdrop-filter:blur(8px);}
+/* Title — own row at top of footer */
+.modal-title{font-weight:600;font-size:0.9rem;width:100%;order:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.15rem;}
+/* Action buttons row */
+.modal-actions-row{display:flex;align-items:center;gap:0.45rem;flex-wrap:wrap;width:100%;order:1;}
+/* Info section (toggleable) */
+.modal-info-section{width:100%;order:2;display:flex;flex-direction:column;gap:0.35rem;padding-top:0.4rem;border-top:1px solid var(--border);}
+.modal.image-only .modal-info-section{display:none;}
+.modal-meta{font-family:'Space Mono',monospace;font-size:0.56rem;color:var(--muted);}
+.modal-dialogue{font-size:0.68rem;line-height:1.55;color:var(--text);font-style:italic;border-left:2px solid rgba(80,190,180,0.4);padding-left:0.6rem;}
+/* Close button */
+.modal-close{
+  background:rgba(7,7,15,0.85);border:1px solid var(--border2);color:var(--text2);
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:0.88rem;border-radius:var(--r-md);
+  transition:all 0.18s;backdrop-filter:blur(10px);
+  /* Desktop: absolute top-right */
+  position:absolute;top:0.65rem;right:0.65rem;z-index:20;
+}
 .modal-close:hover{border-color:var(--pink);color:var(--pink);}
+/* Toggle view button */
+.modal-view-toggle{
+  background:none;border:1px solid var(--border);color:var(--muted);
+  height:28px;padding:0 0.65rem;border-radius:var(--r-xl);
+  font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;
+  cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:4px;
+  margin-left:auto;
+}
+.modal-view-toggle:hover,.modal-view-toggle.active{border-color:var(--accent-dim);color:var(--accent2);}
+/* Mobile overrides */
+@media(max-width:768px){
+  /* Close button: move into footer, not absolute */
+  .modal-close{
+    position:static;order:99;
+    margin-left:auto;width:34px;height:34px;flex-shrink:0;
+  }
+  .modal-title{font-size:0.82rem;}
+}
 .modal-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(7,7,15,0.75);border:1px solid var(--border);color:var(--text);width:36px;height:56px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;border-radius:var(--r-md);z-index:10;transition:all 0.18s;backdrop-filter:blur(8px);}
 .modal-nav:hover{border-color:var(--accent-dim);color:var(--accent2);}
 .modal-nav.prev{left:0.6rem;} .modal-nav.next{right:0.6rem;}
@@ -612,7 +650,6 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
 <!-- Modal -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal" id="modal-box">
-    <button class="modal-close" onclick="closeModalDirect()">✕</button>
     <button class="modal-nav prev" id="modal-prev" onclick="navigateModal(-1)">←</button>
     <button class="modal-nav next" id="modal-next" onclick="navigateModal(1)">→</button>
     <div class="modal-img-wrap" id="modal-img-wrap">
@@ -625,15 +662,24 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
       </div>
     </div>
     <div class="modal-footer">
+      <button class="modal-close" onclick="closeModalDirect()" title="閉じる">✕</button>
       <div class="modal-title" id="modal-title"></div>
+      <div class="modal-actions-row">
       <button class="action-btn fav" id="modal-fav-btn" onclick="toggleFavFromModal()" title="お気に入り"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> FAV</button>
       <button class="action-btn nsfw-toggle" id="modal-nsfw-btn" onclick="toggleNsfwFromModal()" title="NSFWマーク"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> NSFW</button>
       <button class="action-btn" id="modal-retag-btn" onclick="retagFromModal()" title="タグ付け"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> TAG</button>
       <button class="action-btn" id="modal-dl-btn" onclick="downloadCurrentImage()" title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> DL</button>
       <button class="action-btn" id="modal-caption-btn" onclick="window.openCaptionCreator()" title="キャプション"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> CAP</button>
-      <div class="modal-meta" id="modal-meta"></div>
-      <div class="modal-dialogue" id="modal-dialogue" hidden></div>
-      <div class="modal-tags" id="modal-tags"></div>
+      <button class="modal-view-toggle" id="modal-toggle-btn" onclick="toggleModalInfoMode()" title="表示切替">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        INFO
+      </button>
+      </div><!-- end modal-actions-row -->
+      <div class="modal-info-section" id="modal-info-section">
+        <div class="modal-meta" id="modal-meta"></div>
+        <div class="modal-dialogue" id="modal-dialogue" hidden></div>
+        <div class="modal-tags" id="modal-tags"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -3221,7 +3267,28 @@ window.showTagInput=function(e,id){
 window.toggleFavFromModal=function(){window.toggleFav(currentModalId,null);const img=images.find(i=>i.firestoreId===currentModalId);if(img){const b=document.getElementById('modal-fav-btn');b.textContent=img.fav?'★':'☆';b.classList.toggle('active',img.fav);}};
 window.toggleNsfwFromModal=function(){window.toggleNsfw(currentModalId,null);const img=images.find(i=>i.firestoreId===currentModalId);if(img)document.getElementById('modal-nsfw-btn').classList.toggle('active',img.nsfw);};
 window.closeModal=function(e){if(e.target===document.getElementById('modal'))closeModalDirect();};
-window.closeModalDirect=function(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';document.body.classList.remove('modal-open');currentModalId=null;resetZoom();};
+window.closeModalDirect=function(){
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow='';
+  document.body.classList.remove('modal-open');
+  currentModalId=null;resetZoom();
+  // reset info mode
+  document.getElementById('modal-box').classList.remove('image-only');
+  const btn=document.getElementById('modal-toggle-btn');
+  if(btn){btn.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> INFO';btn.classList.remove('active');}
+};
+window.toggleModalInfoMode=function(){
+  const box=document.getElementById('modal-box');
+  const btn=document.getElementById('modal-toggle-btn');
+  const isHiding=!box.classList.contains('image-only');
+  box.classList.toggle('image-only',isHiding);
+  if(btn){
+    btn.innerHTML=isHiding
+      ?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> IMAGE'
+      :'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> INFO';
+    btn.classList.toggle('active',isHiding);
+  }
+};
 
 // Modal navigation (1)
 window.navigateModal=function(dir){
