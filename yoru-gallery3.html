@@ -235,11 +235,11 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(5,5,12,0.92);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.25s;backdrop-filter:blur(14px);}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--surface);border:1px solid var(--border2);width:100%;max-width:1100px;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;position:relative;transform:scale(0.97) translateY(10px);transition:transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94);border-radius:var(--r-xl);box-shadow:0 32px 80px rgba(0,0,0,0.55),0 0 0 1px rgba(110,70,190,0.08);overflow:hidden;}
+.modal{background:var(--surface);border:1px solid var(--border2);width:100%;max-width:1100px;height:calc(100vh - 2rem);display:flex;flex-direction:column;position:relative;transform:scale(0.97) translateY(10px);transition:transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94);border-radius:var(--r-xl);box-shadow:0 32px 80px rgba(0,0,0,0.55),0 0 0 1px rgba(110,70,190,0.08);overflow:hidden;}
 .modal-overlay.open .modal{transform:scale(1) translateY(0);}
 .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),var(--pink));z-index:1;}
-.modal-img-wrap{flex:1;overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center;background:var(--bg2);position:relative;z-index:1;}
-.modal-img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
+.modal-img-wrap{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg2);position:relative;z-index:1;}
+.modal-img{width:100%;height:100%;object-fit:contain;display:block;}
 .modal-footer{padding:0.75rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;flex-shrink:0;background:var(--surface);padding-bottom:calc(0.75rem + env(safe-area-inset-bottom));}
 .modal-title{font-weight:600;font-size:0.85rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .modal-meta{font-family:'Space Mono',monospace;font-size:0.56rem;color:var(--muted);width:100%;order:3;}
@@ -393,6 +393,16 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
   .hdr-btn{padding:0 0.5rem;}
 }
 #file-input{display:none;}
+
+  .action-btn{display:flex;align-items:center;justify-content:center;gap:4px;}
+  .action-btn svg{pointer-events:none;flex-shrink:0;}
+  .sel-btn{display:inline-flex;align-items:center;gap:5px;}
+  .sel-btn svg{pointer-events:none;flex-shrink:0;}
+  .folder-tab{display:flex;align-items:center;justify-content:center;gap:5px;}
+  .folder-tab svg{pointer-events:none;flex-shrink:0;}
+  .upload-icon{display:flex;justify-content:center;color:var(--accent2);margin-bottom:0.5rem;}
+  .empty-state-icon{display:flex;justify-content:center;margin-bottom:1rem;opacity:0.3;}
+
 </style>
 </head>
 <body class="booting">
@@ -443,7 +453,7 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
   <div class="top-section">
     <div>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-        <span class="upload-icon">🎴</span>
+        <span class="upload-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span>
         <div class="upload-text"><strong>タップまたはドラッグ</strong>で画像を追加<br>JPG / PNG / WEBP · Cloudinary + Firestore保存</div>
         <div class="upload-progress" id="upload-progress">
           <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
@@ -453,10 +463,10 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
       <input type="file" id="file-input" accept="image/*" multiple>
       <div class="folder-tabs" style="margin-top:1rem;">
         <button class="folder-tab active" id="tab-safe" onclick="setFolder('safe',this)">
-          📁 SAFE <span class="folder-count" id="count-safe">0</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> SAFE <span class="folder-count" id="count-safe">0</span>
         </button>
         <button class="folder-tab nsfw-tab" id="tab-nsfw" onclick="setFolder('nsfw',this)">
-          🔞 NSFW <span class="folder-count" id="count-nsfw">0</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> NSFW <span class="folder-count" id="count-nsfw">0</span>
         </button>
         <button class="folder-tab" id="tab-all" onclick="setFolder('all',this)">
           ⊞ ALL <span class="folder-count" id="count-all">0</span>
@@ -472,14 +482,14 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
         </div>
       </div>
       <div class="nsfw-section-banner" id="nsfw-banner">
-        🔞 NSFWフォルダー — このエリアの画像は成人向けコンテンツです
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> NSFWフォルダー — このエリアの画像は成人向けコンテンツです
       </div>
       <div class="active-tag-bar" id="active-tag-bar">
-        <span class="atb-label" id="atb-label">🏷 </span>
+        <span class="atb-label" id="atb-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> </span>
         <button class="atb-clear" onclick="clearActiveTag()">✕</button>
       </div>
       <div class="gallery-grid" id="gallery">
-        <div class="empty-state"><div class="empty-state-icon">🌙</div><h3>NO IMAGES YET</h3><p>タップして画像を追加しよう</p></div>
+        <div class="empty-state"><div class="empty-state-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><h3>NO IMAGES YET</h3><p>タップして画像を追加しよう</p></div>
       </div>
       <div id="load-more-sentinel"></div>
       <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
@@ -553,7 +563,7 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
         <div class="sidebar-label">FILTER</div>
         <div class="tag-list">
           <span class="tag active" onclick="setTag('all',this)">ALL</span>
-          <span class="tag" onclick="setTag('fav',this)">⭐ FAV</span>
+          <span class="tag" onclick="setTag('fav',this)" style="display:inline-flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> FAV</span>
         </div>
       </div>
       <div class="sidebar-card">
@@ -577,7 +587,7 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
       <div class="sidebar-card">
         <div class="sidebar-label">TAGGING</div>
         <p style="font-size:0.65rem;color:var(--muted);line-height:1.8;margin-bottom:0.5rem;">
-          <span style="color:var(--accent2);">🏷</span> HuggingFace WD14<br>
+          <span style="color:var(--accent2);display:inline-flex;align-items:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> HuggingFace WD14<br>
           <span style="font-size:0.58rem;">キャラクター認識＋タグ自動付与</span>
         </p>
         <button onclick="setHfToken()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;cursor:pointer;border-radius:3px;letter-spacing:0.1em;">HFトークン設定</button>
@@ -588,8 +598,8 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
       <div class="sidebar-card">
         <div class="sidebar-label">STORAGE</div>
         <p style="font-size:0.7rem;color:var(--muted);line-height:1.8;">
-          <span style="color:var(--cyan);">☁</span> Cloudinary — 画像ファイル<br>
-          <span style="color:var(--accent2);">🔥</span> Firestore — メタデータ<br>
+          <span style="color:var(--cyan);display:inline-flex;align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></span> Cloudinary — 画像ファイル<br>
+          <span style="color:var(--accent2);display:inline-flex;align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span> Firestore — メタデータ<br>
           <span style="font-size:0.6rem;">どのデバイスでも同期されます</span>
         </p>
         <button onclick="setCloudDeleteWorkerUrl()" style="width:100%;margin-top:0.5rem;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;cursor:pointer;border-radius:3px;letter-spacing:0.08em;">削除API URL設定</button>
@@ -615,11 +625,11 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
     </div>
     <div class="modal-footer">
       <div class="modal-title" id="modal-title"></div>
-      <button class="action-btn fav" id="modal-fav-btn" onclick="toggleFavFromModal()">☆</button>
-      <button class="action-btn nsfw-toggle" id="modal-nsfw-btn" onclick="toggleNsfwFromModal()">🔞</button>
-      <button class="action-btn" id="modal-retag-btn" onclick="retagFromModal()" title="キャラクター認識＋タグ付け">🏷</button>
-      <button class="action-btn" id="modal-dl-btn" onclick="downloadCurrentImage()" title="ダウンロード">⬇</button>
-      <button class="action-btn" id="modal-caption-btn" onclick="window.openCaptionCreator()" title="Caption Creator">✍</button>
+      <button class="action-btn fav" id="modal-fav-btn" onclick="toggleFavFromModal()" title="お気に入り"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> FAV</button>
+      <button class="action-btn nsfw-toggle" id="modal-nsfw-btn" onclick="toggleNsfwFromModal()" title="NSFWマーク"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> NSFW</button>
+      <button class="action-btn" id="modal-retag-btn" onclick="retagFromModal()" title="タグ付け"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> TAG</button>
+      <button class="action-btn" id="modal-dl-btn" onclick="downloadCurrentImage()" title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> DL</button>
+      <button class="action-btn" id="modal-caption-btn" onclick="window.openCaptionCreator()" title="キャプション"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> CAP</button>
       <div class="modal-meta" id="modal-meta"></div>
       <div class="modal-dialogue" id="modal-dialogue" hidden></div>
       <div class="modal-tags" id="modal-tags"></div>
@@ -689,10 +699,10 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
 <!-- Selection Bar -->
 <div id="select-bar">
   <span class="sel-count" id="sel-count">0件選択中</span>
-  <button class="sel-btn" onclick="bulkFav()">★ FAV</button>
-  <button class="sel-btn" onclick="bulkNsfw()">🔞 NSFW</button>
-  <button class="sel-btn" onclick="bulkDownload()">⬇ DL</button>
-  <button class="sel-btn danger" onclick="bulkDelete()">🗑 削除</button>
+  <button class="sel-btn" onclick="bulkFav()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> FAV</button>
+  <button class="sel-btn" onclick="bulkNsfw()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> NSFW</button>
+  <button class="sel-btn" onclick="bulkDownload()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> DL</button>
+  <button class="sel-btn danger" onclick="bulkDelete()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> 削除</button>
   <button class="sel-btn dismiss" onclick="exitSelectMode()">✕ 解除</button>
 </div>
 
@@ -2510,7 +2520,7 @@ async function runBulkRetag(targets,modeText){
         break;
       }
       const img=targets[i];
-      showToast(`🏷 ${modeText} ${i+1}/${targets.length}`,1800);
+      showToast(`タグ付け: ${modeText} ${i+1}/${targets.length}`,1800);
       await resetImageTaggingState(img);
       const tags=await tagWithWD14(img.url);
       if(tags.length){
@@ -2560,7 +2570,7 @@ window.retagFromModal=async function(){
   const img=images.find(i=>i.firestoreId===currentModalId);if(!img)return;
   const btn=document.getElementById('modal-retag-btn');btn.textContent='🔄';btn.disabled=true;
   try{
-    showToast('🏷 タグ付け中...',5000);
+    showToast('タグ付け中...',5000);
     await resetImageTaggingState(img);
     const tags=await tagWithWD14(img.url);
     img.tags=tags;
@@ -2681,7 +2691,7 @@ function renderGallery(reset){
   if(viewMode!=='normal')cls+=` ${viewMode}`;
   grid.className=cls;
   if(!currentList.length){
-    const emptyMsg={safe:['🌙','NO SAFE IMAGES','健全な画像はまだありません'],nsfw:['🔞','NO NSFW IMAGES','NSFWフォルダーは空です'],all:['🌙','NO IMAGES YET','タップして画像を追加しよう']}[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
+    const emptyMsg={safe:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO SAFE IMAGES','健全な画像はまだありません'],nsfw:['<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','NO NSFW IMAGES','NSFWフォルダーは空です'],all:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO IMAGES YET','タップして画像を追加しよう']}[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
     grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyMsg[0]}</div><h3>${emptyMsg[1]}</h3><p>${emptyMsg[2]}</p></div>`;
     document.getElementById('load-more-wrap').style.display='none';
     document.getElementById('header-count').textContent=images.length;
@@ -2778,8 +2788,8 @@ function buildItemHtml(img,blurNsfw,index=0){
       ${topTags?`<div class="item-tags">${topTags}</div>`:''}
     </div>
     <div class="item-actions">
-      <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)">${img.fav?'★':'☆'}</button>
-      <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)">🔞</button>
+      <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)" title="お気に入り">${img.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</button>
+      <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)" title="NSFW"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
       <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)">✕</button>
     </div>
     <div class="delete-confirm" id="dc-${img.firestoreId}">
@@ -2841,7 +2851,7 @@ window.setActiveTag=function(tag){
     if(allFilter)allFilter.classList.add('active');
   }
   const bar=document.getElementById('active-tag-bar');
-  if(activeTag){bar.classList.add('show');document.getElementById('atb-label').textContent=`🏷 ${formatTagLabel(activeTag)}`;}
+  if(activeTag){bar.classList.add('show');document.getElementById('atb-label').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> '+formatTagLabel(activeTag);}
   else{bar.classList.remove('show');}
   renderGallery();closeSidebar();if(activeTag)scrollToGalleryResults();
 };
@@ -2867,7 +2877,7 @@ window.setActiveWork=function(work){
     if(allFilter)allFilter.classList.add('active');
   }
   const bar=document.getElementById('active-tag-bar');
-  if(activeWork){bar.classList.add('show');document.getElementById('atb-label').textContent=`作品 ${formatEntityLabel(activeWork)}`;}
+  if(activeWork){bar.classList.add('show');document.getElementById('atb-label').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> 作品: '+formatEntityLabel(activeWork);}
   else{bar.classList.remove('show');}
   renderGallery();closeSidebar();if(activeWork)scrollToGalleryResults();
 };
@@ -2944,7 +2954,7 @@ window.toggleNsfw=async function(id,e){
   if(e)e.stopPropagation();
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
   img.nsfw=!img.nsfw;renderGallery();updateStats();
-  await updateImg(id,{nsfw:img.nsfw});showToast(img.nsfw?'🔞 NSFWマーク付けた':'✓ NSFWマーク外した');
+  await updateImg(id,{nsfw:img.nsfw});showToast(img.nsfw?'NSFW マーク付けた':'NSFW マーク外した');
 };
 window.confirmDelete=function(id,e){if(e)e.stopPropagation();document.getElementById(`dc-${id}`).classList.add('show');};
 window.cancelDelete=function(id){document.getElementById(`dc-${id}`).classList.remove('show');};
@@ -2955,9 +2965,9 @@ window.deleteImg=async function(id){
   await removeImg(id);
   const pid=img?.publicId||extractPublicId(img?.url);
   if(pid){
-    try{await deleteFromCloudinary(pid);showToast('🗑 Firestore と Cloudinary の両方から削除しました');}
-    catch(e){showToast('🗑 Firestore は削除済み（Cloudinary 側ファイルは残ります）');}
-  }else{showToast('🗑 Firestore から削除しました');}
+    try{await deleteFromCloudinary(pid);showToast('Firestore と Cloudinary から削除しました');}
+    catch(e){showToast('Firestore 削除済み（Cloudinary 側ファイルは残ります）');}
+  }else{showToast('Firestore から削除しました');}
 };
 
 // ===== SORT (6 RND included) =====
@@ -3033,9 +3043,9 @@ function renderFocusLayout(list){
   focusDialogue.hidden=!display.dialogue_ja;
   focusDialogue.textContent=display.dialogue_ja?`「${display.dialogue_ja}」`:'';
   document.getElementById('focus-info-actions').innerHTML=`
-    <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)">${img.fav?'★':'☆'}</button>
-    <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)">🔞</button>
-    <button class="action-btn" onclick="downloadFile('${img.url}','${escHtml(img.name)}')" title="ダウンロード">⬇</button>
+    <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)" title="お気に入り">${img.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</button>
+    <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)" title="NSFW"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+    <button class="action-btn" onclick="downloadFile('${img.url}','${escHtml(img.name)}')" title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     <button class="action-btn" onclick="openModal('${img.firestoreId}')" title="フルスクリーン">⤢</button>
     <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)" title="削除">✕</button>
   `;
@@ -3079,14 +3089,14 @@ window.bulkFav=async function(){
   if(!selectedIds.size)return;
   const ids=[...selectedIds];
   for(const id of ids){const img=images.find(i=>i.firestoreId===id);if(img&&!img.fav){img.fav=true;await updateImg(id,{fav:true});}}
-  updateStats();renderGallery();showToast(`★ ${ids.length}件をFAVにしました`);
+  updateStats();renderGallery();showToast(`♥ ${ids.length}件をFAVにしました`);
 };
 // Bulk NSFW
 window.bulkNsfw=async function(){
   if(!selectedIds.size)return;
   const ids=[...selectedIds];
   for(const id of ids){const img=images.find(i=>i.firestoreId===id);if(img){img.nsfw=!img.nsfw;await updateImg(id,{nsfw:img.nsfw});}}
-  updateStats();renderGallery();showToast(`🔞 ${ids.length}件のNSFWを切り替えました`);
+  updateStats();renderGallery();showToast(`${ids.length}件のNSFWを切り替えました`);
 };
 // Bulk Delete
 window.bulkDelete=async function(){
@@ -3100,12 +3110,12 @@ window.bulkDelete=async function(){
     const pid=img?.publicId||extractPublicId(img?.url);
     if(pid){try{await deleteFromCloudinary(pid);}catch(_){}}
   }
-  updateStats();renderGallery();showToast(`🗑 ${ids.length}件を Firestore と Cloudinary の両方から削除しました`);
+  updateStats();renderGallery();showToast(`${ids.length}件を削除しました`);
 };
 // Bulk Download (3)
 window.bulkDownload=async function(){
   if(!selectedIds.size)return;
-  const ids=[...selectedIds];showToast(`⬇ ${ids.length}件ダウンロード中...`,4000);
+  const ids=[...selectedIds];showToast(`${ids.length}件ダウンロード中...`,4000);
   for(const id of ids){
     const img=images.find(i=>i.firestoreId===id);if(!img)continue;
     await downloadFile(img.url,img.name);
@@ -3127,7 +3137,7 @@ async function downloadFile(url,name){
 window.downloadCurrentImage=async function(){
   if(!currentModalId)return;
   const img=images.find(i=>i.firestoreId===currentModalId);if(!img)return;
-  showToast('⬇ ダウンロード中...');
+  showToast('ダウンロード中...');
   await downloadFile(img.url,img.name);
 };
 
@@ -3135,7 +3145,7 @@ function updateModalRetagButton(img){
   const btn=document.getElementById('modal-retag-btn');
   if(!btn||!img)return;
   const hasTags=Array.isArray(img.tags)&&img.tags.length>0;
-  btn.textContent=hasTags?'🔁':'🏷';
+  btn.innerHTML=hasTags?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> RETAG':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> TAG';
   btn.title=hasTags?'タグをやり直し取得':'キャラクター認識＋タグ付け';
 }
 
@@ -3159,7 +3169,7 @@ window.openModal=function(id){
   modalDialogue.textContent=display.dialogue_ja?`「${display.dialogue_ja}」`:'';
   renderModalTags(img);
   updateModalRetagButton(img);
-  const fb=document.getElementById('modal-fav-btn');fb.textContent=img.fav?'★':'☆';fb.classList.toggle('active',img.fav);
+  const fb=document.getElementById('modal-fav-btn');fb.innerHTML=(img.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>')+' FAV';fb.classList.toggle('active',img.fav);
   document.getElementById('modal-nsfw-btn').classList.toggle('active',img.nsfw);
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow='hidden';document.body.classList.add('modal-open');
