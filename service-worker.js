@@ -1,14 +1,14 @@
-const CACHE_NAME = 'nocturne-pwa-v2';
+const CACHE_NAME = 'nocturne-pwa-v3';
 const APP_SHELL = [
   './',
   './index.html',
   './yoru3.html',
   './yoru-gallery3.html',
-  './site-icon.png',
-  './pwa-manifest.webmanifest',
-  './icons/pwa-icon-192.png',
-  './icons/pwa-icon-512.png',
-  './icons/pwa-icon-maskable-512.png'
+  './site-icon.png?v=20260504',
+  './pwa-manifest.webmanifest?v=20260504',
+  './icons/pwa-icon-192.png?v=20260504',
+  './icons/pwa-icon-512.png?v=20260504',
+  './icons/pwa-icon-maskable-512.png?v=20260504'
 ];
 
 self.addEventListener('install', event => {
