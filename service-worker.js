@@ -1,5 +1,8 @@
 const CACHE_NAME = 'nocturne-pwa-v1';
 const APP_SHELL = [
+  './',
+  './index.html',
+  './yoru3.html',
   './yoru-gallery3.html',
   './site-icon.png',
   './pwa-manifest.webmanifest',
@@ -41,7 +44,7 @@ self.addEventListener('fetch', event => {
         return response;
       }).catch(() => {
         if(event.request.mode === 'navigate'){
-          return caches.match('./yoru-gallery3.html');
+          return caches.match('./index.html').then(response => response || caches.match('./yoru-gallery3.html'));
         }
         throw new Error('Network request failed and no cached response is available.');
       });

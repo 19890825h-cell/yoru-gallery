@@ -3,7 +3,7 @@
   "short_name": "Nocturne",
   "description": "A moonlit AI image gallery.",
   "lang": "ja",
-  "start_url": "./yoru-gallery3.html",
+  "start_url": "./yoru3.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
