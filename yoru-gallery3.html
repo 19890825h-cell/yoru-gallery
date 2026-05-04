@@ -5,20 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<meta name="theme-color" content="#050508">
-<title>YORU — AI Anime Gallery</title>
+<link rel="manifest" href="pwa-manifest.webmanifest">
+<meta name="theme-color" content="#060610">
+<meta name="application-name" content="Nocturne">
+<meta name="apple-mobile-web-app-title" content="Nocturne">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Nocturne — Moonlit Image Gallery</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    DESIGN TOKENS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 :root {
-  --bg:#07070f; --bg2:#0c0c17; --surface:#10101e; --surface2:#17172a;
-  --accent:oklch(0.55 0.18 290); --accent2:oklch(0.70 0.20 290);
-  --accent-dim:oklch(0.38 0.12 290);
-  --cyan:oklch(0.68 0.13 195); --pink:oklch(0.62 0.18 350);
-  --text:#d4d2ec; --muted:#504d6e; --border:rgba(255,255,255,0.08);
-  --border2:rgba(255,255,255,0.13); --glow:rgba(110,70,190,0.22);
+  --bg:#060610; --bg2:#0b0b17; --surface:#101020; --surface2:#17172c;
+  --accent:oklch(0.57 0.20 292); --accent2:oklch(0.76 0.18 288);
+  --accent-dim:oklch(0.40 0.13 292);
+  --cyan:oklch(0.74 0.14 208); --pink:oklch(0.66 0.17 326);
+  --moon:#eef3ff; --text:#dddaf5; --muted:#5b587a; --border:rgba(220,230,255,0.09);
+  --border2:rgba(220,230,255,0.15); --glow:rgba(142,82,235,0.26);
   --header-h:58px;
   --r-sm:6px; --r-md:10px; --r-lg:14px; --r-xl:20px;
   --panel-shadow:0 16px 48px rgba(0,0,0,0.35);
@@ -31,7 +36,9 @@ body{
   color:var(--text);
   font-family:'Outfit','Noto Sans JP',sans-serif;
   min-height:100vh;overflow-x:hidden;line-height:1.5;
-  background-image:radial-gradient(ellipse 80% 45% at 50% -8%, rgba(100,55,185,0.13), transparent);
+  background-image:
+    radial-gradient(ellipse 58% 32% at 48% -8%, rgba(150,90,240,0.18), transparent),
+    radial-gradient(ellipse 34% 26% at 84% 8%, rgba(76,198,255,0.08), transparent);
 }
 /* 旧グリッチアニメ → 最小限に */
 @keyframes glitch{0%,100%{text-shadow:0 0 18px var(--glow);}50%{text-shadow:0 0 24px var(--glow);}}
@@ -57,8 +64,9 @@ body{
 #pw-screen.hidden{display:none !important;}
 .pw-box{background:var(--surface);border:1px solid var(--border);padding:2rem 1.5rem;width:100%;max-width:320px;position:relative;text-align:center;border-radius:var(--r-xl);}
 .pw-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),var(--pink));border-radius:var(--r-xl) var(--r-xl) 0 0;}
-.pw-logo{font-family:'Space Mono',monospace;font-size:2.2rem;font-weight:700;letter-spacing:0.2em;color:var(--accent2);}
-.pw-logo span{color:var(--cyan);}
+.pw-logo{font-family:'Space Mono',monospace;font-size:1.85rem;font-weight:700;letter-spacing:0.08em;color:var(--moon);display:flex;align-items:center;justify-content:center;gap:0.65rem;}
+.pw-logo span{color:var(--accent2);}
+.pw-logo .brand-icon{width:38px;height:38px;}
 .pw-sub{font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:0.2em;color:var(--muted);margin-bottom:1.75rem;display:block;}
 .pw-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:0.85rem 1rem;font-family:'Space Mono',monospace;font-size:0.95rem;outline:none;text-align:center;letter-spacing:0.15em;border-radius:var(--r-md);transition:border-color 0.2s;margin-bottom:0.75rem;-webkit-appearance:none;}
 .pw-input:focus{border-color:var(--accent-dim);}
@@ -71,8 +79,9 @@ body{
 /* LOADING */
 #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:400;flex-direction:column;gap:1rem;transition:opacity 0.4s,visibility 0.4s;}
 #loading-screen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-.loading-logo{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;letter-spacing:0.2em;color:var(--accent2);}
-.loading-logo span{color:var(--cyan);}
+.loading-logo{font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;letter-spacing:0.08em;color:var(--moon);display:flex;align-items:center;gap:0.65rem;}
+.loading-logo span{color:var(--accent2);}
+.loading-logo .brand-icon{width:36px;height:36px;}
 .loading-bar-wrap{width:200px;height:2px;background:var(--surface2);border:1px solid var(--border);border-radius:2px;}
 .loading-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));width:0%;transition:width 0.3s;border-radius:2px;}
 .loading-text{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.14em;}
@@ -85,9 +94,12 @@ header{position:sticky;top:0;z-index:100;
   height:var(--header-h);gap:0.75rem;
 }
 body.booting header{opacity:0;transform:translateY(-10px);animation:bootHeaderIn 0.6s cubic-bezier(0.22,1,0.36,1) 0.08s forwards;}
-.logo{font-family:'Space Mono',monospace;font-size:1.05rem;font-weight:700;letter-spacing:0.22em;color:var(--text);line-height:1;flex-shrink:0;}
-.logo span:first-of-type{color:var(--accent2);}
-.logo-sub{font-family:'Space Mono',monospace;font-size:0.45rem;color:var(--muted);letter-spacing:0.2em;display:block;margin-top:2px;}
+.logo{font-family:'Space Mono',monospace;color:var(--text);line-height:1;flex-shrink:0;display:flex;align-items:center;gap:0.6rem;min-width:0;}
+.brand-icon{width:30px;height:30px;border-radius:9px;box-shadow:0 0 18px rgba(125,95,255,0.35),0 0 24px rgba(80,210,255,0.14);flex:0 0 auto;}
+.brand-copy{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.brand-text{font-size:0.98rem;font-weight:700;letter-spacing:0.08em;color:var(--moon);text-shadow:0 0 18px rgba(150,100,255,0.28);}
+.brand-text span{color:var(--accent2);}
+.logo-sub{font-family:'Space Mono',monospace;font-size:0.43rem;color:var(--muted);letter-spacing:0.16em;display:block;margin-top:2px;}
 .header-right{display:flex;align-items:center;gap:0.45rem;flex-shrink:0;}
 .count-badge{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);white-space:nowrap;display:flex;align-items:center;}
 .count-badge span{color:var(--accent2);}
@@ -450,8 +462,8 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
 <!-- PASSWORD -->
 <div id="pw-screen">
   <div class="pw-box">
-    <div class="pw-logo">YORU<span>夜</span></div>
-    <span class="pw-sub">AI ANIME GALLERY · PRIVATE</span>
+    <div class="pw-logo"><img class="brand-icon" src="site-icon.png" alt="">Noct<span>urne</span></div>
+    <span class="pw-sub">MOONLIT IMAGE GALLERY · PRIVATE</span>
     <input class="pw-input" type="password" id="pw-input" placeholder="PASSWORD" autocomplete="current-password">
     <button class="pw-btn" onclick="checkPassword()">ENTER</button>
     <div class="pw-error" id="pw-error"></div>
@@ -465,14 +477,20 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
 
 <!-- LOADING -->
 <div id="loading-screen">
-  <div class="loading-logo">YORU<span>夜</span></div>
+  <div class="loading-logo"><img class="brand-icon" src="site-icon.png" alt="">Noct<span>urne</span></div>
   <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
   <div class="loading-text" id="loading-text">CONNECTING TO CLOUD...</div>
 </div>
 
 <!-- HEADER -->
 <header>
-  <div class="logo">YORU<span>夜</span><span class="logo-sub">AI ANIME GALLERY</span></div>
+  <div class="logo">
+    <img class="brand-icon" src="site-icon.png" alt="">
+    <div class="brand-copy">
+      <span class="brand-text">Noct<span>urne</span></span>
+      <span class="logo-sub">MOONLIT IMAGE GALLERY</span>
+    </div>
+  </div>
   <div class="header-right">
     <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> IMAGES<span class="live-badge">LIVE</span></span>
     <button class="hdr-btn" id="btn-select" onclick="toggleSelectMode()" title="一括選択モード">SELECT</button>
@@ -911,7 +929,7 @@ function schedulePendingAutoTagging(){
           await updateImg(img.firestoreId,{tags,nsfw:img.nsfw,work_hint:img.work_hint,...autoMeta.meta});
         }
       }catch(err){
-        console.warn('[YORU] deferred auto-tagging failed:', err?.message || err);
+        console.warn('[Nocturne] deferred auto-tagging failed:', err?.message || err);
       }finally{
         autoTagInFlightIds.delete(img.firestoreId);
       }
@@ -947,7 +965,7 @@ async function handleFiles(files){
             Object.assign(data,autoMeta.meta);
           }
         }catch(err){
-          console.warn('[YORU] upload auto-tagging failed:', err?.message || err);
+          console.warn('[Nocturne] upload auto-tagging failed:', err?.message || err);
         }
       }
       await addDoc(collection(db,COL),data);
@@ -2407,7 +2425,7 @@ async function inferWorkWithClip(imageInput,tags=[]){
     if(!top || Number(top.boostedScore||0) < CLIP_WORK_THRESHOLD)return '';
     return normalizeWorkKey(top.resolvedKey || '');
   }catch(err){
-    console.warn('[YORU] CLIP work inference failed:', err?.message || err);
+    console.warn('[Nocturne] CLIP work inference failed:', err?.message || err);
     return '';
   }
 }
@@ -2507,7 +2525,7 @@ async function tagWithWD14(imageUrl){
     const tags = extractWd14TagsFromResult(result);
     if(!tags.length)throw new Error('タグを取得できませんでした');
     return tags;
-  }catch(err){console.warn('[YORU] WD14エラー:', err.message);return[];}
+  }catch(err){console.warn('[Nocturne] WD14エラー:', err.message);return[];}
 }
 
 function sleep(ms){
@@ -3529,6 +3547,14 @@ window.closeCaptionCreatorOverlay = function(e){
   if(e.target === document.getElementById('caption-creator')) window.closeCaptionCreator();
 };
 // END CAPTION CREATOR
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
 
 window.showToast=showToast;
 </script>

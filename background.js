@@ -16,7 +16,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: 'saveToYoru',
-      title: 'YORUに保存',
+      title: 'Nocturneに保存',
       contexts: ['image'],
       // 全サイト対応 — documentUrlPatterns 制限なし
     });
@@ -59,7 +59,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     notify(`保存完了！ ${cloudResult.width}×${cloudResult.height}px`, 'success');
 
   } catch (err) {
-    console.error('[YORU] 保存失敗:', err);
+    console.error('[Nocturne] 保存失敗:', err);
     notify(`保存失敗: ${err.message}`, 'error');
   }
 });
@@ -286,9 +286,9 @@ function extractName(url) {
 
 function notify(message, type = 'progress') {
   const titles = {
-    success:  'YORU - 保存完了',
-    error:    'YORU - エラー',
-    progress: 'YORU',
+    success:  'Nocturne - 保存完了',
+    error:    'Nocturne - エラー',
+    progress: 'Nocturne',
   };
   // アイコンが存在しない場合でもクラッシュしないよう lastError を握りつぶす
   chrome.notifications.create(
@@ -296,7 +296,7 @@ function notify(message, type = 'progress') {
     {
       type: 'basic',
       iconUrl: 'icons/icon128.png',
-      title: titles[type] || 'YORU',
+      title: titles[type] || 'Nocturne',
       message,
     },
     () => { void chrome.runtime.lastError; }
@@ -304,5 +304,5 @@ function notify(message, type = 'progress') {
 }
 
 function log(...args) {
-  console.log('[YORU]', ...args);
+  console.log('[Nocturne]', ...args);
 }

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "YORU - Image Saver",
+  "name": "Nocturne - Image Saver",
   "version": "1.1.0",
   "description": "あらゆるサイトの画像をCloudinary＋Firestoreに右クリックで直接保存",
 
@@ -30,7 +30,7 @@
 
   "action": {
     "default_popup": "popup.html",
-    "default_title": "YORU設定",
+    "default_title": "Nocturne設定",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

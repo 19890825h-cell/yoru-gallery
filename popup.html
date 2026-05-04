@@ -2,36 +2,46 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>YORU 設定</title>
+  <title>Nocturne 設定</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       width: 340px;
       font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
-      background: #0d0d1a;
-      color: #e0d7f5;
+      background: #080812;
+      color: #e6e3fb;
     }
 
     header {
-      background: linear-gradient(135deg, #1a1035, #2a1060);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(118, 84, 255, 0.32), transparent 38%),
+        linear-gradient(135deg, #111126, #171030);
       padding: 16px 20px;
       display: flex;
       align-items: center;
       gap: 10px;
-      border-bottom: 1px solid #3a2080;
+      border-bottom: 1px solid rgba(170, 150, 255, 0.24);
+    }
+
+    header img {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      box-shadow: 0 0 18px rgba(125, 95, 255, 0.38), 0 0 24px rgba(80, 210, 255, 0.16);
     }
 
     header .logo {
       font-size: 22px;
       font-weight: 800;
-      letter-spacing: 4px;
-      color: #c084fc;
+      letter-spacing: 1.4px;
+      color: #eef3ff;
+      text-shadow: 0 0 16px rgba(150, 100, 255, 0.32);
     }
 
     header .subtitle {
       font-size: 11px;
-      color: #9370db;
+      color: #8f8ab6;
     }
 
     .content {
@@ -43,7 +53,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      color: #7c5cbf;
+      color: #9b8dff;
       margin: 14px 0 8px;
     }
 
@@ -95,7 +105,7 @@
     button:active { transform: scale(0.97); }
 
     #btn-save {
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      background: linear-gradient(135deg, #7c4dff, #23b9ff);
       color: #fff;
     }
 
@@ -145,9 +155,10 @@
 <body>
 
 <header>
+  <img src="site-icon.png" alt="">
   <div>
-    <div class="logo">YORU</div>
-    <div class="subtitle">NovelAI → Cloudinary + Firestore</div>
+    <div class="logo">Nocturne</div>
+    <div class="subtitle">Moonlit Image Gallery</div>
   </div>
 </header>
 
@@ -187,7 +198,7 @@
   <div id="status"></div>
 </div>
 
-<footer>novelai.net の画像を右クリック →「YORUに保存」</footer>
+<footer>novelai.net の画像を右クリック →「Nocturneに保存」</footer>
 
 <script src="popup.js"></script>
 </body>
