@@ -1,7 +1,7 @@
 {
-  "name": "Nocturne - Moonlit Image Gallery",
+  "name": "Nocturne - Moonlit Media Library",
   "short_name": "Nocturne",
-  "description": "A moonlit AI image gallery.",
+  "description": "A moonlit media library for images and music.",
   "lang": "ja",
   "start_url": "./yoru3.html",
   "scope": "./",

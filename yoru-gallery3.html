@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Nocturne">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Nocturne — Moonlit Image Gallery</title>
+<title>Nocturne — Moonlit Media Library</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 @font-face {
@@ -183,6 +183,13 @@ body.booting .top-section{opacity:0;transform:translateY(16px);animation:bootSec
 .gallery-item:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 12px 32px rgba(0,0,0,0.45),0 0 0 1px rgba(110,70,190,0.12);}
 .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s ease,filter 0.3s;filter:brightness(0.9) saturate(0.92);}
 .gallery-item:hover img{transform:scale(1.06);filter:brightness(1) saturate(1.05);}
+.audio-card{display:flex;flex-direction:column;justify-content:space-between;padding:0.85rem;background:radial-gradient(circle at 18% 18%,rgba(110,231,255,0.14),transparent 34%),linear-gradient(135deg,rgba(110,70,190,0.18),rgba(7,7,15,0.92));}
+.audio-art{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.65rem;text-align:center;color:var(--text);}
+.audio-icon{width:48px;height:48px;border:1px solid rgba(111,251,255,0.28);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--cyan);background:rgba(111,251,255,0.06);box-shadow:0 0 24px rgba(111,251,255,0.12);}
+.audio-name{font-size:0.78rem;font-weight:600;line-height:1.35;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.audio-meta{font-family:var(--ui-accent);font-size:0.54rem;color:var(--muted);}
+.audio-player{width:100%;height:32px;margin-top:0.65rem;filter:invert(0.86) hue-rotate(190deg) saturate(0.78);opacity:0.88;}
+.audio-card .gallery-item-overlay{pointer-events:none;}
 body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);animation:bootCardIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;animation-delay:var(--enter-delay,0ms);}
 .gallery-item.is-new{animation:newItemIn 0.6s cubic-bezier(0.22,1,0.36,1),outerOrbitGlow 2.4s linear infinite;}
 .gallery-item.is-new::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(111,251,255,0.15),rgba(198,120,221,0.12));opacity:0;animation:newItemFlash 0.7s ease;pointer-events:none;z-index:1;}
@@ -479,7 +486,7 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
 <div id="pw-screen">
   <div class="pw-box">
     <div class="pw-logo"><img class="brand-icon" src="site-icon.png?v=20260504" alt="">Noct<span>urne</span></div>
-    <span class="pw-sub">MOONLIT IMAGE GALLERY · PRIVATE</span>
+    <span class="pw-sub">MOONLIT MEDIA LIBRARY · PRIVATE</span>
     <input class="pw-input" type="password" id="pw-input" placeholder="PASSWORD" autocomplete="current-password">
     <button class="pw-btn" onclick="checkPassword()">ENTER</button>
     <div class="pw-error" id="pw-error"></div>
@@ -504,11 +511,11 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
     <img class="brand-icon" src="site-icon.png?v=20260504" alt="">
     <div class="brand-copy">
       <span class="brand-text">Noct<span>urne</span></span>
-      <span class="logo-sub">MOONLIT IMAGE GALLERY</span>
+      <span class="logo-sub">MOONLIT MEDIA LIBRARY</span>
     </div>
   </div>
   <div class="header-right">
-    <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> IMAGES<span class="live-badge">LIVE</span></span>
+    <span class="count-badge"><span class="pulse-dot"></span><span id="header-count">0</span> ITEMS<span class="live-badge">LIVE</span></span>
     <select class="font-select" id="font-select" onchange="setFontChoice(this.value)" title="フォント選択">
       <option value="default">FONT STD</option>
       <option value="wanpaku">WANPAKU</option>
@@ -533,13 +540,13 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
     <div>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
         <span class="upload-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span>
-        <div class="upload-text"><strong>タップまたはドラッグ</strong>で画像を追加<br>JPG / PNG / WEBP · Cloudinary + Firestore保存</div>
+        <div class="upload-text"><strong>タップまたはドラッグ</strong>で画像・音楽を追加<br>JPG / PNG / WEBP / MP3 / WAV / M4A · Cloudinary + Firestore保存</div>
         <div class="upload-progress" id="upload-progress">
           <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
           <div class="progress-label" id="progress-label"></div>
         </div>
       </div>
-      <input type="file" id="file-input" accept="image/*" multiple>
+      <input type="file" id="file-input" accept="image/*,audio/*" multiple>
       <div class="folder-tabs" style="margin-top:1rem;">
         <button class="folder-tab active" id="tab-safe" onclick="setFolder('safe',this)">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> SAFE <span class="folder-count" id="count-safe">0</span>
@@ -568,7 +575,7 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
         <button class="atb-clear" onclick="clearActiveTag()">✕</button>
       </div>
       <div class="gallery-grid" id="gallery">
-        <div class="empty-state"><div class="empty-state-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><h3>NO IMAGES YET</h3><p>タップして画像を追加しよう</p></div>
+        <div class="empty-state"><div class="empty-state-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><h3>NO MEDIA YET</h3><p>画像・音楽を追加しよう</p></div>
       </div>
       <div id="load-more-sentinel"></div>
       <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
@@ -677,7 +684,7 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
       <div class="sidebar-card">
         <div class="sidebar-label">STORAGE</div>
         <p style="font-size:0.7rem;color:var(--muted);line-height:1.8;">
-          <span style="color:var(--cyan);display:inline-flex;align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></span> Cloudinary — 画像ファイル<br>
+          <span style="color:var(--cyan);display:inline-flex;align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></span> Cloudinary — メディアファイル<br>
           <span style="color:var(--accent2);display:inline-flex;align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span> Firestore — メタデータ<br>
           <span style="font-size:0.6rem;">どのデバイスでも同期されます</span>
         </p>
@@ -836,7 +843,7 @@ let CLOUD_DELETE_WORKER_URL = localStorage.getItem('yoru-cloud-delete-worker-url
 const DEFAULT_HF_TOKEN = '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';
 let HF_TOKEN = localStorage.getItem('yoru-hf-token') || DEFAULT_HF_TOKEN;
 const WD14_MODEL = 'SmilingWolf/wd-v1-4-moat-tagger-v2';
-const UPLOAD_URL=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+const UPLOAD_URL=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
 const WD14_SPACE_ID = 'SmilingWolf/wd-tagger';
 const WD14_GENERAL_THRESHOLD = 0.35;
 const WD14_CHARACTER_THRESHOLD = 0.72;
@@ -976,23 +983,38 @@ document.getElementById('file-input').addEventListener('change',e=>{handleFiles(
 const zone=document.getElementById('upload-zone');
 zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
 zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
-zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');handleFiles(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')));});
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');handleFiles(Array.from(e.dataTransfer.files).filter(isSupportedUploadFile));});
+
+function isSupportedUploadFile(file){
+  return file && (file.type.startsWith('image/') || file.type.startsWith('audio/'));
+}
+
+function getMediaType(item){
+  const type=String(item?.mediaType||item?.type||item?.mimeType||'').toLowerCase();
+  if(type.startsWith('audio'))return 'audio';
+  if(item?.resourceType==='video' && /\.(mp3|wav|m4a|aac|ogg|flac|webm)(\?|$)/i.test(item?.url||''))return 'audio';
+  return 'image';
+}
+
+function isAudioItem(item){return getMediaType(item)==='audio';}
 
 async function handleFiles(files){
-  if(!files.length)return;
+  files=files.filter(isSupportedUploadFile);
+  if(!files.length){showToast('⚠ 対応ファイルは画像または音楽です');return;}
   const pe=document.getElementById('upload-progress'),be=document.getElementById('progress-bar'),le=document.getElementById('progress-label');
   pe.style.display='block';let done=0;
   for(const file of files){
     le.textContent=`アップロード中... ${done+1}/${files.length}`;
     try{
-      const url=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
-      const data={name:file.name.replace(/\.[^.]+$/,''),url,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[],work_hint:'',title_ja:'',caption_ja:'',dialogue_ja:'',nsfw_summary_ja:''};
-      if(HF_TOKEN){
+      const cloudResult=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
+      const mediaType=file.type.startsWith('audio/')?'audio':'image';
+      const data={name:file.name.replace(/\.[^.]+$/,''),originalName:file.name,url:cloudResult.secure_url,publicId:cloudResult.public_id||'',resourceType:cloudResult.resource_type||'',format:cloudResult.format||file.name.split('.').pop()||'',mediaType,mimeType:file.type,duration:cloudResult.duration||0,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[],work_hint:'',title_ja:'',caption_ja:'',dialogue_ja:'',nsfw_summary_ja:''};
+      if(mediaType==='image' && HF_TOKEN){
         le.textContent=`タグ付け中... ${done+1}/${files.length}`;
         try{
-          const tags=await tagWithWD14AfterUpload(file,url);
+          const tags=await tagWithWD14AfterUpload(file,data.url);
           if(tags.length){
-            const autoMeta=await buildResolvedTaggingState(data,tags,file||url);
+            const autoMeta=await buildResolvedTaggingState(data,tags,file||data.url);
             data.tags=tags;
             data.nsfw=autoMeta.nsfw;
             data.work_hint=autoMeta.work_hint||'';
@@ -1006,9 +1028,9 @@ async function handleFiles(files){
     }catch(e){showToast(`⚠ ${file.name} 失敗`);}
     done++;
   }
-  be.style.width='100%';le.textContent=`✓ ${done}枚完了`;
+  be.style.width='100%';le.textContent=`✓ ${done}件完了`;
   setTimeout(()=>{pe.style.display='none';be.style.width='0%';},2000);
-  showToast(`✓ ${done}枚をクラウドに保存`);
+  showToast(`✓ ${done}件をクラウドに保存`);
 }
 
 async function getWd14Client(){
@@ -2694,8 +2716,8 @@ function uploadToCloudinary(file,onProgress){
     const fd=new FormData();fd.append('file',file);fd.append('upload_preset',UPLOAD_PRESET);fd.append('folder','yoru-gallery');
     const xhr=new XMLHttpRequest();xhr.open('POST',UPLOAD_URL);
     xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(e.loaded/e.total*100);};
-    xhr.onload=()=>{xhr.status===200?resolve(JSON.parse(xhr.responseText).secure_url):reject();};
-    xhr.onerror=()=>reject();xhr.send(fd);
+    xhr.onload=()=>{xhr.status===200?resolve(JSON.parse(xhr.responseText)):reject(new Error('Cloudinary upload failed'));};
+    xhr.onerror=()=>reject(new Error('Cloudinary upload failed'));xhr.send(fd);
   });
 }
 
@@ -2781,7 +2803,7 @@ window.setFolder=function(folder,el){
 
 // ===== PAGINATION (10) =====
 function renderGallery(reset){
-  if(focusMode){renderFocusLayout(getSorted());return;}
+  if(focusMode){renderFocusLayout(getSorted().filter(i=>!isAudioItem(i)));return;}
   const blurNsfw=document.getElementById('nsfw-blur-toggle').checked && folderMode!=='nsfw';
   const grid=document.getElementById('gallery');
   currentList=getSorted();
@@ -2792,7 +2814,7 @@ function renderGallery(reset){
   if(viewMode!=='normal')cls+=` ${viewMode}`;
   grid.className=cls;
   if(!currentList.length){
-    const emptyMsg={safe:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO SAFE IMAGES','健全な画像はまだありません'],nsfw:['<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','NO NSFW IMAGES','NSFWフォルダーは空です'],all:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO IMAGES YET','タップして画像を追加しよう']}[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
+    const emptyMsg={safe:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO SAFE MEDIA','健全なメディアはまだありません'],nsfw:['<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','NO NSFW MEDIA','NSFWフォルダーは空です'],all:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO MEDIA YET','画像・音楽を追加しよう']}[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
     grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyMsg[0]}</div><h3>${emptyMsg[1]}</h3><p>${emptyMsg[2]}</p></div>`;
     document.getElementById('load-more-wrap').style.display='none';
     document.getElementById('header-count').textContent=images.length;
@@ -2825,7 +2847,7 @@ function updateLoadMore(){
   const remaining=currentList.length-displayedCount;
   if(remaining>0){
     wrap.style.display='flex';
-    info.textContent=`${displayedCount} / ${currentList.length}枚`;
+    info.textContent=`${displayedCount} / ${currentList.length}件`;
   }else{
     wrap.style.display='none';
   }
@@ -2841,6 +2863,7 @@ if('IntersectionObserver' in window){
 }
 
 function buildItemHtml(img,blurNsfw,index=0){
+  if(isAudioItem(img))return buildAudioItemHtml(img,index);
   const bl=img.nsfw&&blurNsfw;
   const newCls=recentlyAddedIds.has(img.firestoreId)?' is-new':'';
   const enterDelay=Math.min(index,11)*45;
@@ -2867,6 +2890,7 @@ function buildItemHtml(img,blurNsfw,index=0){
   const display=getDisplayMetadata(img);
   const displayTitle=display.title_ja||img.name;
   const displayMeta=(display.caption_ja||formatDate(img.date)).slice(0,70);
+  const downloadArgs=`${JSON.stringify(img.url)},${JSON.stringify(img.originalName||img.name)}`;
   if(selectMode){
     return `<div class="gallery-item${bl?' nsfw-blur':''}${newCls} ${sel}" style="--enter-delay:${enterDelay}ms" data-id="${img.firestoreId}" data-nsfw="${img.nsfw?'true':'false'}" onclick="toggleSelect('${img.firestoreId}',event)">
       ${newBadge}${newRing}
@@ -2891,6 +2915,7 @@ function buildItemHtml(img,blurNsfw,index=0){
     <div class="item-actions">
       <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)" title="お気に入り">${img.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</button>
       <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)" title="NSFW"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+      <button class="action-btn" onclick='downloadFile(${downloadArgs},event)' title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
       <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)">✕</button>
     </div>
     <div class="delete-confirm" id="dc-${img.firestoreId}">
@@ -2900,7 +2925,52 @@ function buildItemHtml(img,blurNsfw,index=0){
   </div>`;
 }
 
+function buildAudioItemHtml(item,index=0){
+  const enterDelay=Math.min(index,11)*45;
+  const sel=selectedIds.has(item.firestoreId)?'selected':'';
+  const title=escHtml(item.name||item.originalName||'Audio');
+  const meta=[formatSize(item.size||0),item.duration?formatDuration(item.duration):'STREAM'].filter(Boolean).join(' · ');
+  const downloadArgs=`${JSON.stringify(item.url)},${JSON.stringify(item.originalName||item.name)}`;
+  if(selectMode){
+    return `<div class="gallery-item audio-card ${sel}" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false" onclick="toggleSelect('${item.firestoreId}',event)">
+      <div class="audio-art">
+        <div class="audio-icon">${audioIconSvg()}</div>
+        <div class="audio-name">${title}</div>
+        <div class="audio-meta">${escHtml(meta)}</div>
+      </div>
+    </div>`;
+  }
+  return `<div class="gallery-item audio-card" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false">
+    <div class="audio-art">
+      <div class="audio-icon">${audioIconSvg()}</div>
+      <div class="audio-name">${title}</div>
+      <div class="audio-meta">${escHtml(meta)}</div>
+    </div>
+    <audio class="audio-player" controls preload="metadata" src="${escAttr(item.url)}" title="${title}"></audio>
+    <div class="item-actions">
+      <button class="action-btn fav${item.fav?' active':''}" onclick="toggleFav('${item.firestoreId}',event)" title="お気に入り">${item.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</button>
+      <button class="action-btn" onclick='downloadFile(${downloadArgs},event)' title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+      <button class="action-btn" onclick="confirmDelete('${item.firestoreId}',event)">✕</button>
+    </div>
+    <div class="delete-confirm" id="dc-${item.firestoreId}">
+      <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--muted);">Firestore の記録を削除します</span></p>
+      <div class="btn-row"><button class="btn-confirm" onclick="deleteImg('${item.firestoreId}')">DELETE</button><button class="btn-cancel" onclick="cancelDelete('${item.firestoreId}')">CANCEL</button></div>
+    </div>
+  </div>`;
+}
+
+function audioIconSvg(){
+  return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+}
+
+function formatDuration(seconds){
+  const total=Math.max(0,Math.round(Number(seconds)||0));
+  const m=Math.floor(total/60),s=String(total%60).padStart(2,'0');
+  return `${m}:${s}`;
+}
+
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return escHtml(s).replace(/'/g,'&#39;');}
 
 // ===== TAG BROWSER =====
 function kanaOrderKey(tag){
@@ -3100,7 +3170,7 @@ window.toggleFocusView=function(){
     gg.style.display='none';
     if(lmw)lmw.style.display='none';
     if(sent)sent.style.display='none';
-    renderFocusLayout(getSorted());
+    renderFocusLayout(getSorted().filter(i=>!isAudioItem(i)));
   }else{
     fl.classList.remove('active');
     gg.style.display='';
@@ -3143,22 +3213,23 @@ function renderFocusLayout(list){
   const focusDialogue=document.getElementById('focus-info-dialogue');
   focusDialogue.hidden=!display.dialogue_ja;
   focusDialogue.textContent=display.dialogue_ja?`「${display.dialogue_ja}」`:'';
+  const focusDownloadArgs=`${JSON.stringify(img.url)},${JSON.stringify(img.originalName||img.name)}`;
   document.getElementById('focus-info-actions').innerHTML=`
     <button class="action-btn fav${img.fav?' active':''}" onclick="toggleFav('${img.firestoreId}',event)" title="お気に入り">${img.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</button>
     <button class="action-btn nsfw-toggle${img.nsfw?' active':''}" onclick="toggleNsfw('${img.firestoreId}',event)" title="NSFW"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
-    <button class="action-btn" onclick="downloadFile('${img.url}','${escHtml(img.name)}')" title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="action-btn" onclick='downloadFile(${focusDownloadArgs},event)' title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     <button class="action-btn" onclick="openModal('${img.firestoreId}')" title="フルスクリーン">⤢</button>
     <button class="action-btn" onclick="confirmDelete('${img.firestoreId}',event)" title="削除">✕</button>
   `;
   document.getElementById('focus-info-tags').innerHTML=sortTagsForDisplay(img.tags||[]).map(t=>`<span class="modal-tag" onclick='setActiveTag(${JSON.stringify(t)})' title="${escHtml(t)}">${escHtml(formatTagLabel(t))}</span>`).join('');
 }
 
-window.focusSelect=function(idx){focusIndex=idx;if(focusMode)renderFocusLayout(getSorted());};
+window.focusSelect=function(idx){focusIndex=idx;if(focusMode)renderFocusLayout(getSorted().filter(i=>!isAudioItem(i)));};
 window.focusNavigate=function(dir){
-  const list=getSorted();if(!list.length)return;
+  const list=getSorted().filter(i=>!isAudioItem(i));if(!list.length)return;
   focusIndex=(focusIndex+dir+list.length)%list.length;renderFocusLayout(list);
 };
-window.openModalFromFocus=function(){const list=getSorted();if(list[focusIndex])openModal(list[focusIndex].firestoreId);};
+window.openModalFromFocus=function(){const list=getSorted().filter(i=>!isAudioItem(i));if(list[focusIndex])openModal(list[focusIndex].firestoreId);};
 
 // ===== MASONRY MODE (7) =====
 window.toggleMasonry=function(){
@@ -3228,18 +3299,23 @@ window.bulkDownload=async function(){
   const ids=[...selectedIds];showToast(`${ids.length}件ダウンロード中...`,4000);
   for(const id of ids){
     const img=images.find(i=>i.firestoreId===id);if(!img)continue;
-    await downloadFile(img.url,img.name);
+    await downloadFile(img.url,img.originalName||img.name);
     await new Promise(r=>setTimeout(r,300));
   }
   showToast(`✓ ${ids.length}件ダウンロード完了`);
 };
 
 // ===== DOWNLOAD (3) =====
-async function downloadFile(url,name){
+async function downloadFile(url,name,e){
+  if(e)e.stopPropagation();
   try{
     const res=await fetch(url);const blob=await res.blob();
-    const ext=url.match(/\.([a-z]+)(\?|$)/i)?.[1]||'jpg';
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${name||'image'}.${ext}`;
+    const extFromName=String(name||'').match(/\.([a-z0-9]+)$/i)?.[1];
+    const extFromUrl=String(url||'').match(/\.([a-z0-9]+)(\?|$)/i)?.[1];
+    const extFromType=(blob.type||'').split('/')[1]?.replace('mpeg','mp3');
+    const ext=extFromName||extFromUrl||extFromType||'bin';
+    const base=String(name||'download').replace(/\.[^.]+$/,'');
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${base}.${ext}`;
     document.body.appendChild(a);a.click();document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
   }catch(e){showToast('⚠ ダウンロード失敗');}
@@ -3248,7 +3324,7 @@ window.downloadCurrentImage=async function(){
   if(!currentModalId)return;
   const img=images.find(i=>i.firestoreId===currentModalId);if(!img)return;
   showToast('ダウンロード中...');
-  await downloadFile(img.url,img.name);
+  await downloadFile(img.url,img.originalName||img.name);
 };
 
 function updateModalRetagButton(img){
@@ -3263,6 +3339,7 @@ function updateModalRetagButton(img){
 window.openModal=function(id){
   if(selectMode)return;
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
+  if(isAudioItem(img))return;
   if(recentlyAddedIds.has(id)){
     recentlyAddedIds.delete(id);
     renderGallery(false);
@@ -3356,10 +3433,11 @@ window.toggleModalInfoMode=function(){
 // Modal navigation (1)
 window.navigateModal=function(dir){
   if(!currentModalId)return;
-  const idx=currentList.findIndex(i=>i.firestoreId===currentModalId);
+  const modalList=currentList.filter(i=>!isAudioItem(i));
+  const idx=modalList.findIndex(i=>i.firestoreId===currentModalId);
   if(idx===-1)return;
-  const next=(idx+dir+currentList.length)%currentList.length;
-  window.openModal(currentList[next].firestoreId);
+  const next=(idx+dir+modalList.length)%modalList.length;
+  window.openModal(modalList[next].firestoreId);
 };
 
 document.addEventListener('keydown',e=>{

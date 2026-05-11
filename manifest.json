@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Nocturne Clipper",
   "version": "1.2.0",
-  "description": "右クリックした画像をCloudinary＋Firestoreへ保存するNocturne用クリッパー",
+  "description": "右クリックした画像や追加した音楽をCloudinary＋Firestoreへ保存するNocturne用クリッパー",
 
   "permissions": [
     "contextMenus",
