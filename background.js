@@ -16,7 +16,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: 'saveToYoru',
-      title: 'Nocturneに保存',
+      title: 'Nocturne Clipperに保存',
       contexts: ['image'],
       // 全サイト対応 — documentUrlPatterns 制限なし
     });

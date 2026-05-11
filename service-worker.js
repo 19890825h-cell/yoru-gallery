@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nocturne-pwa-v3';
+const CACHE_NAME = 'nocturne-pwa-v4';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const APP_SHELL = [
   './yoru-gallery3.html',
   './site-icon.png?v=20260504',
   './pwa-manifest.webmanifest?v=20260504',
+  './fonts/FOT-RodinWanpaku-Pro-EB.otf?v=20260511',
   './icons/pwa-icon-192.png?v=20260504',
   './icons/pwa-icon-512.png?v=20260504',
   './icons/pwa-icon-maskable-512.png?v=20260504'
