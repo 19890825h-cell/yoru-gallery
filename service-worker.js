@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nocturne-pwa-v4';
+const CACHE_NAME = 'nocturne-pwa-v5';
 const APP_SHELL = [
   './',
   './index.html',
@@ -31,6 +31,11 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if(event.request.method !== 'GET') return;
 
+  if(event.request.mode === 'navigate' || isHtmlRequest(event.request)){
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cached => {
       if(cached) return cached;
@@ -52,6 +57,26 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
+function networkFirst(request){
+  return fetch(request).then(response => {
+    const copy = response.clone();
+    if(response.ok){
+      caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+    }
+    return response;
+  }).catch(() => {
+    return caches.match(request).then(cached => {
+      if(cached) return cached;
+      if(request.mode === 'navigate') return caches.match('./index.html').then(response => response || caches.match('./yoru-gallery3.html'));
+      throw new Error('Network request failed and no cached response is available.');
+    });
+  });
+}
+
+function isHtmlRequest(request){
+  return (request.headers.get('accept') || '').includes('text/html');
+}
 
 function shouldRuntimeCache(request, response){
   const url = new URL(request.url);
