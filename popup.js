@@ -9,17 +9,15 @@ const DEFAULT_CONFIG = {
 const FIELDS = Object.keys(DEFAULT_CONFIG);
 const GALLERY_URL = 'https://19890825h-cell.github.io/yoru-gallery/yoru-gallery3.html';
 
-// ===== 起動時に設定を読み込む =====
 document.addEventListener('DOMContentLoaded', async () => {
   const stored = await chrome.storage.sync.get(DEFAULT_CONFIG);
   FIELDS.forEach((key) => {
     const el = document.getElementById(key);
     if (el) el.value = stored[key] || DEFAULT_CONFIG[key];
   });
-  showStatus('', '設定を確認して、必要なら保存してください。');
+  showStatus('', 'Settings loaded. Right-click media or a video page to clip it.');
 });
 
-// ===== 保存ボタン =====
 document.getElementById('btn-save').addEventListener('click', async () => {
   const values = {};
   let valid = true;
@@ -37,22 +35,21 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   });
 
   if (!valid) {
-    showStatus('err', '空のフィールドがあります。');
+    showStatus('err', 'Please fill in every field.');
     return;
   }
 
   await chrome.storage.sync.set(values);
-  showStatus('ok', '設定を保存しました。');
+  showStatus('ok', 'Settings saved.');
 });
 
-// ===== リセットボタン =====
 document.getElementById('btn-reset').addEventListener('click', async () => {
   await chrome.storage.sync.set(DEFAULT_CONFIG);
   FIELDS.forEach((key) => {
     const el = document.getElementById(key);
     if (el) el.value = DEFAULT_CONFIG[key];
   });
-  showStatus('ok', 'デフォルト設定に戻しました。');
+  showStatus('ok', 'Defaults restored.');
 });
 
 document.getElementById('btn-gallery').addEventListener('click', () => {
@@ -64,7 +61,7 @@ FIELDS.forEach((key) => {
   if (!el) return;
   el.addEventListener('input', () => {
     el.classList.toggle('invalid', !el.value.trim());
-    showStatus('', '未保存の変更があります。');
+    showStatus('', 'You have unsaved changes.');
   });
 });
 
@@ -73,5 +70,5 @@ function showStatus(type, msg) {
   el.className = type || '';
   el.textContent = msg;
   if (!type) return;
-  setTimeout(() => showStatus('', '設定を確認して、必要なら保存してください。'), 3000);
+  setTimeout(() => showStatus('', 'Settings loaded. Right-click media or a video page to clip it.'), 3000);
 }

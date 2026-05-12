@@ -140,6 +140,18 @@ body.booting header{opacity:0;transform:translateY(-10px);animation:bootHeaderIn
 .progress-bar-wrap{background:var(--surface2);border:1px solid var(--border);height:3px;border-radius:2px;overflow:hidden;}
 .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));width:0%;transition:width 0.3s;}
 .progress-label{font-family:var(--ui-accent);font-size:0.58rem;color:var(--muted);margin-top:0.4rem;}
+.storage-meter{display:flex;flex-direction:column;gap:0.55rem;}
+.storage-row{display:flex;align-items:flex-end;justify-content:space-between;gap:0.7rem;}
+.storage-value{font-family:var(--ui-accent);font-size:1.05rem;color:var(--text);line-height:1;}
+.storage-sub{font-family:var(--ui-accent);font-size:0.56rem;color:var(--muted);letter-spacing:0.08em;}
+.storage-bar{height:8px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;overflow:hidden;}
+.storage-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--accent2));border-radius:999px;transition:width 0.35s ease,background 0.2s;}
+.storage-fill.warn{background:linear-gradient(90deg,#d19a66,var(--pink));}
+.storage-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:0.35rem;}
+.storage-chip{border:1px solid var(--border);background:rgba(255,255,255,0.02);border-radius:var(--r-sm);padding:0.35rem;text-align:center;}
+.storage-chip strong{display:block;font-family:var(--ui-accent);font-size:0.54rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.15rem;}
+.storage-chip span{display:block;font-family:var(--ui-accent);font-size:0.62rem;color:var(--accent2);}
+.storage-note{font-size:0.58rem;color:var(--muted);line-height:1.6;}
 
 /* LAYOUT */
 .container{max-width:1440px;margin:0 auto;padding:1.25rem;}
@@ -183,13 +195,36 @@ body.booting .top-section{opacity:0;transform:translateY(16px);animation:bootSec
 .gallery-item:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 12px 32px rgba(0,0,0,0.45),0 0 0 1px rgba(110,70,190,0.12);}
 .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s ease,filter 0.3s;filter:brightness(0.9) saturate(0.92);}
 .gallery-item:hover img{transform:scale(1.06);filter:brightness(1) saturate(1.05);}
-.audio-card{display:flex;flex-direction:column;justify-content:space-between;padding:0.85rem;background:radial-gradient(circle at 18% 18%,rgba(110,231,255,0.14),transparent 34%),linear-gradient(135deg,rgba(110,70,190,0.18),rgba(7,7,15,0.92));}
-.audio-art{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.65rem;text-align:center;color:var(--text);}
-.audio-icon{width:48px;height:48px;border:1px solid rgba(111,251,255,0.28);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--cyan);background:rgba(111,251,255,0.06);box-shadow:0 0 24px rgba(111,251,255,0.12);}
-.audio-name{font-size:0.78rem;font-weight:600;line-height:1.35;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.audio-meta{font-family:var(--ui-accent);font-size:0.54rem;color:var(--muted);}
-.audio-player{width:100%;height:32px;margin-top:0.65rem;filter:invert(0.86) hue-rotate(190deg) saturate(0.78);opacity:0.88;}
-.audio-card .gallery-item-overlay{pointer-events:none;}
+.audio-library,.video-library{display:grid;grid-template-columns:1fr;gap:0.75rem;}
+.audio-track{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0.9rem;align-items:center;padding:1rem;background:radial-gradient(circle at 12% 20%,rgba(110,231,255,0.14),transparent 32%),linear-gradient(135deg,rgba(110,70,190,0.18),rgba(7,7,15,0.94));border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--card-shadow);}
+.audio-track:hover{border-color:var(--border2);box-shadow:0 12px 32px rgba(0,0,0,0.45),0 0 0 1px rgba(80,190,180,0.1);}
+.audio-track.selected{outline:2px solid var(--cyan);}
+.audio-icon,.video-icon{width:58px;height:58px;border:1px solid rgba(111,251,255,0.28);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--cyan);background:rgba(111,251,255,0.06);box-shadow:0 0 24px rgba(111,251,255,0.12);flex:0 0 auto;}
+.audio-main{min-width:0;display:flex;flex-direction:column;gap:0.55rem;}
+.audio-name{font-size:0.95rem;font-weight:650;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+.audio-meta{font-family:var(--ui-accent);font-size:0.58rem;color:var(--muted);}
+.audio-player{width:100%;height:44px;filter:invert(0.86) hue-rotate(190deg) saturate(0.78);opacity:0.92;}
+.audio-actions{display:flex;align-items:center;gap:0.35rem;}
+.audio-actions .action-btn{position:static;opacity:1;width:34px;height:34px;}
+.video-track{position:relative;display:grid;grid-template-columns:minmax(220px,42%) minmax(0,1fr);gap:1rem;align-items:stretch;padding:1rem;background:radial-gradient(circle at 12% 20%,rgba(111,251,255,0.12),transparent 32%),linear-gradient(135deg,rgba(110,70,190,0.18),rgba(7,7,15,0.94));border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--card-shadow);}
+.video-track:hover{border-color:var(--border2);box-shadow:0 12px 32px rgba(0,0,0,0.45),0 0 0 1px rgba(111,251,255,0.1);}
+.video-track.selected{outline:2px solid var(--cyan);}
+.video-preview{min-height:220px;background:#05050b;border:1px solid rgba(255,255,255,0.08);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.video-player{width:100%;height:100%;min-height:220px;display:block;background:#05050b;object-fit:contain;}
+.video-embed{width:100%;height:100%;min-height:220px;display:block;background:#05050b;border:0;}
+.video-thumb{width:100%;height:100%;min-height:220px;display:block;object-fit:cover;background:#05050b;}
+.video-main{min-width:0;display:flex;flex-direction:column;gap:0.7rem;}
+.video-name{font-size:1rem;font-weight:700;line-height:1.35;word-break:break-word;color:var(--text);}
+.video-meta{font-family:var(--ui-accent);font-size:0.58rem;color:var(--muted);}
+.video-actions{display:flex;align-items:center;gap:0.35rem;margin-top:auto;justify-content:flex-end;}
+.video-actions .action-btn{position:static;opacity:1;width:36px;height:36px;}
+@media(max-width:768px){
+  .audio-track{grid-template-columns:auto minmax(0,1fr);gap:0.75rem;padding:0.85rem;}
+  .audio-actions{grid-column:1/-1;justify-content:flex-end;}
+  .audio-player{height:40px;}
+  .video-track{grid-template-columns:1fr;padding:0.85rem;}
+  .video-preview,.video-player,.video-embed,.video-thumb{min-height:190px;}
+}
 body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);animation:bootCardIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;animation-delay:var(--enter-delay,0ms);}
 .gallery-item.is-new{animation:newItemIn 0.6s cubic-bezier(0.22,1,0.36,1),outerOrbitGlow 2.4s linear infinite;}
 .gallery-item.is-new::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(111,251,255,0.15),rgba(198,120,221,0.12));opacity:0;animation:newItemFlash 0.7s ease;pointer-events:none;z-index:1;}
@@ -540,13 +575,13 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
     <div>
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
         <span class="upload-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span>
-        <div class="upload-text"><strong>タップまたはドラッグ</strong>で画像・音楽を追加<br>JPG / PNG / WEBP / MP3 / WAV / M4A · Cloudinary + Firestore保存</div>
+        <div class="upload-text"><strong>Click or drag</strong> to add images, audio, and video<br>JPG / PNG / WEBP / MP3 / WAV / M4A / MP4 / WEBM · Cloudinary + Firestore</div>
         <div class="upload-progress" id="upload-progress">
           <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
           <div class="progress-label" id="progress-label"></div>
         </div>
       </div>
-      <input type="file" id="file-input" accept="image/*,audio/*" multiple>
+      <input type="file" id="file-input" accept="image/*,audio/*,video/*" multiple>
       <div class="folder-tabs" style="margin-top:1rem;">
         <button class="folder-tab active" id="tab-safe" onclick="setFolder('safe',this)">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> SAFE <span class="folder-count" id="count-safe">0</span>
@@ -556,6 +591,12 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
         </button>
         <button class="folder-tab" id="tab-all" onclick="setFolder('all',this)">
           ⊞ ALL <span class="folder-count" id="count-all">0</span>
+        </button>
+        <button class="folder-tab" id="tab-audio" onclick="setFolder('audio',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> AUDIO <span class="folder-count" id="count-audio">0</span>
+        </button>
+        <button class="folder-tab" id="tab-video" onclick="setFolder('video',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg> VIDEO <span class="folder-count" id="count-video">0</span>
         </button>
       </div>
       <div id="gallery-header-anchor"></div>
@@ -683,6 +724,27 @@ body.booting .gallery-item{opacity:0;transform:translateY(12px) scale(0.985);ani
       </div>
       <div class="sidebar-card">
         <div class="sidebar-label">STORAGE</div>
+        <div class="storage-meter">
+          <div class="storage-row">
+            <div>
+              <div class="storage-sub">USED</div>
+              <div class="storage-value" id="storage-used">0 MB</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="storage-sub">REMAINING</div>
+              <div class="storage-value" id="storage-remaining">25 GB</div>
+            </div>
+          </div>
+          <div class="storage-bar"><div class="storage-fill" id="storage-fill"></div></div>
+          <div class="storage-sub" id="storage-summary">0% of 25 GB estimate</div>
+          <div class="storage-breakdown">
+            <div class="storage-chip"><strong>IMAGE</strong><span id="storage-image">0 MB</span></div>
+            <div class="storage-chip"><strong>AUDIO</strong><span id="storage-audio">0 MB</span></div>
+            <div class="storage-chip"><strong>VIDEO</strong><span id="storage-video">0 MB</span></div>
+          </div>
+          <div class="storage-note">Cloudinaryの実残量ではなく、保存済みファイルサイズからの推定です。</div>
+          <button onclick="setStorageLimit()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:0.4rem;font-family:var(--ui-accent);font-size:0.6rem;cursor:pointer;border-radius:3px;letter-spacing:0.08em;">STORAGE LIMIT</button>
+        </div>
         <p style="font-size:0.7rem;color:var(--muted);line-height:1.8;">
           <span style="color:var(--cyan);display:inline-flex;align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></span> Cloudinary — メディアファイル<br>
           <span style="color:var(--accent2);display:inline-flex;align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span> Firestore — メタデータ<br>
@@ -838,6 +900,8 @@ applyFontChoice(localStorage.getItem(FONT_STORAGE_KEY));
 const CLOUD_NAME='dlab6ddls', UPLOAD_PRESET='yoru_gallery';
 const DEFAULT_CLOUD_DELETE_WORKER_URL = 'https://yoru-gallery-delete.yoru-delete-api.workers.dev';
 let CLOUD_DELETE_WORKER_URL = localStorage.getItem('yoru-cloud-delete-worker-url') || DEFAULT_CLOUD_DELETE_WORKER_URL;
+const DEFAULT_STORAGE_LIMIT_BYTES = 25 * 1024 * 1024 * 1024;
+let STORAGE_LIMIT_BYTES = Number(localStorage.getItem('yoru-storage-limit-bytes')) || DEFAULT_STORAGE_LIMIT_BYTES;
 
 // HuggingFace WD14
 const DEFAULT_HF_TOKEN = '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';
@@ -986,28 +1050,34 @@ zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
 zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');handleFiles(Array.from(e.dataTransfer.files).filter(isSupportedUploadFile));});
 
 function isSupportedUploadFile(file){
-  return file && (file.type.startsWith('image/') || file.type.startsWith('audio/'));
+  return file && (file.type.startsWith('image/') || file.type.startsWith('audio/') || file.type.startsWith('video/'));
 }
 
 function getMediaType(item){
   const type=String(item?.mediaType||item?.type||item?.mimeType||'').toLowerCase();
   if(type.startsWith('audio'))return 'audio';
+  if(type.startsWith('video'))return 'video';
   if(item?.resourceType==='video' && /\.(mp3|wav|m4a|aac|ogg|flac|webm)(\?|$)/i.test(item?.url||''))return 'audio';
+  if(item?.resourceType==='video')return 'video';
+  if(/\.(mp4|mov|m4v|ogv)(\?|$)/i.test(item?.url||''))return 'video';
   return 'image';
 }
 
 function isAudioItem(item){return getMediaType(item)==='audio';}
+function isVideoItem(item){return getMediaType(item)==='video';}
+function isVisualItem(item){return getMediaType(item)==='image';}
+function isVideoLinkItem(item){return item?.mediaType==='videoLink'||item?.sourceType==='link'||Boolean(item?.embedUrl);}
 
 async function handleFiles(files){
   files=files.filter(isSupportedUploadFile);
-  if(!files.length){showToast('⚠ 対応ファイルは画像または音楽です');return;}
+  if(!files.length){showToast('⚠ 対応ファイルは画像・音声・動画です');return;}
   const pe=document.getElementById('upload-progress'),be=document.getElementById('progress-bar'),le=document.getElementById('progress-label');
   pe.style.display='block';let done=0;
   for(const file of files){
     le.textContent=`アップロード中... ${done+1}/${files.length}`;
     try{
       const cloudResult=await uploadToCloudinary(file,pct=>{be.style.width=((done+pct/100)/files.length*100)+'%';});
-      const mediaType=file.type.startsWith('audio/')?'audio':'image';
+      const mediaType=file.type.startsWith('audio/')?'audio':file.type.startsWith('video/')?'video':'image';
       const data={name:file.name.replace(/\.[^.]+$/,''),originalName:file.name,url:cloudResult.secure_url,publicId:cloudResult.public_id||'',resourceType:cloudResult.resource_type||'',format:cloudResult.format||file.name.split('.').pop()||'',mediaType,mimeType:file.type,duration:cloudResult.duration||0,fav:false,nsfw:false,date:new Date().toISOString(),size:file.size,tags:[],work_hint:'',title_ja:'',caption_ja:'',dialogue_ja:'',nsfw_summary_ja:''};
       if(mediaType==='image' && HF_TOKEN){
         le.textContent=`タグ付け中... ${done+1}/${files.length}`;
@@ -2754,8 +2824,13 @@ window.setQuickFilter=function(f,el){
 function getSorted(){
   let list=[...images];
   // フォルダー分け
-  if(folderMode==='safe')list=list.filter(i=>!i.nsfw);
-  else if(folderMode==='nsfw')list=list.filter(i=>i.nsfw);
+  if(folderMode==='audio')list=list.filter(isAudioItem);
+  else if(folderMode==='video')list=list.filter(isVideoItem);
+  else {
+    list=list.filter(isVisualItem);
+    if(folderMode==='safe')list=list.filter(i=>!i.nsfw);
+    else if(folderMode==='nsfw')list=list.filter(i=>i.nsfw);
+  }
   // クイックフィルター (5)
   if(quickFilter==='safe')list=list.filter(i=>!i.nsfw);
   else if(quickFilter==='nsfw')list=list.filter(i=>i.nsfw);
@@ -2795,6 +2870,12 @@ function getSorted(){
 
 window.setFolder=function(folder,el){
   folderMode=folder;
+  if((folder==='audio' || folder==='video') && focusMode){
+    focusMode=false;
+    document.getElementById('btn-focus').classList.remove('active');
+    document.getElementById('focus-layout').classList.remove('active');
+    document.getElementById('gallery').style.display='';
+  }
   document.querySelectorAll('.folder-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('nsfw-banner').classList.toggle('show', folder==='nsfw');
@@ -2803,18 +2884,18 @@ window.setFolder=function(folder,el){
 
 // ===== PAGINATION (10) =====
 function renderGallery(reset){
-  if(focusMode){renderFocusLayout(getSorted().filter(i=>!isAudioItem(i)));return;}
+  if(focusMode){renderFocusLayout(getSorted().filter(isVisualItem));return;}
   const blurNsfw=document.getElementById('nsfw-blur-toggle').checked && folderMode!=='nsfw';
   const grid=document.getElementById('gallery');
   currentList=getSorted();
   if(reset!==false)displayedCount=0;
   // Masonry vs grid classes
-  let cls='gallery-grid';
-  if(masonryMode)cls+=' masonry';
-  if(viewMode!=='normal')cls+=` ${viewMode}`;
+  let cls=folderMode==='audio'?'audio-library':folderMode==='video'?'video-library':'gallery-grid';
+  if(folderMode!=='audio' && folderMode!=='video' && masonryMode)cls+=' masonry';
+  if(folderMode!=='audio' && folderMode!=='video' && viewMode!=='normal')cls+=` ${viewMode}`;
   grid.className=cls;
   if(!currentList.length){
-    const emptyMsg={safe:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO SAFE MEDIA','健全なメディアはまだありません'],nsfw:['<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','NO NSFW MEDIA','NSFWフォルダーは空です'],all:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO MEDIA YET','画像・音楽を追加しよう']}[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
+    const emptyMsg={safe:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO SAFE MEDIA','健全なメディアはまだありません'],nsfw:['<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','NO NSFW MEDIA','NSFWフォルダーは空です'],all:['<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','NO MEDIA YET','画像・音楽を追加しよう'],audio:[audioIconSvg(),'NO AUDIO YET','音楽ファイルを追加しよう'],video:[videoIconSvg(),'NO VIDEO YET','動画ファイルを追加しよう']}[folderMode]||['🌙','NO RESULTS','条件を変えてみて'];
     grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyMsg[0]}</div><h3>${emptyMsg[1]}</h3><p>${emptyMsg[2]}</p></div>`;
     document.getElementById('load-more-wrap').style.display='none';
     document.getElementById('header-count').textContent=images.length;
@@ -2864,6 +2945,7 @@ if('IntersectionObserver' in window){
 
 function buildItemHtml(img,blurNsfw,index=0){
   if(isAudioItem(img))return buildAudioItemHtml(img,index);
+  if(isVideoItem(img))return buildVideoItemHtml(img,index);
   const bl=img.nsfw&&blurNsfw;
   const newCls=recentlyAddedIds.has(img.firestoreId)?' is-new':'';
   const enterDelay=Math.min(index,11)*45;
@@ -2932,22 +3014,22 @@ function buildAudioItemHtml(item,index=0){
   const meta=[formatSize(item.size||0),item.duration?formatDuration(item.duration):'STREAM'].filter(Boolean).join(' · ');
   const downloadArgs=`${JSON.stringify(item.url)},${JSON.stringify(item.originalName||item.name)}`;
   if(selectMode){
-    return `<div class="gallery-item audio-card ${sel}" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false" onclick="toggleSelect('${item.firestoreId}',event)">
-      <div class="audio-art">
-        <div class="audio-icon">${audioIconSvg()}</div>
+    return `<div class="audio-track ${sel}" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false" onclick="toggleSelect('${item.firestoreId}',event)">
+      <div class="audio-icon">${audioIconSvg()}</div>
+      <div class="audio-main">
         <div class="audio-name">${title}</div>
         <div class="audio-meta">${escHtml(meta)}</div>
       </div>
     </div>`;
   }
-  return `<div class="gallery-item audio-card" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false">
-    <div class="audio-art">
-      <div class="audio-icon">${audioIconSvg()}</div>
+  return `<div class="audio-track" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false">
+    <div class="audio-icon">${audioIconSvg()}</div>
+    <div class="audio-main">
       <div class="audio-name">${title}</div>
       <div class="audio-meta">${escHtml(meta)}</div>
+      <audio class="audio-player" controls preload="metadata" src="${escAttr(item.url)}" title="${title}"></audio>
     </div>
-    <audio class="audio-player" controls preload="metadata" src="${escAttr(item.url)}" title="${title}"></audio>
-    <div class="item-actions">
+    <div class="audio-actions">
       <button class="action-btn fav${item.fav?' active':''}" onclick="toggleFav('${item.firestoreId}',event)" title="お気に入り">${item.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</button>
       <button class="action-btn" onclick='downloadFile(${downloadArgs},event)' title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
       <button class="action-btn" onclick="confirmDelete('${item.firestoreId}',event)">✕</button>
@@ -2961,6 +3043,55 @@ function buildAudioItemHtml(item,index=0){
 
 function audioIconSvg(){
   return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+}
+
+function buildVideoItemHtml(item,index=0){
+  const enterDelay=Math.min(index,11)*45;
+  const sel=selectedIds.has(item.firestoreId)?'selected':'';
+  const title=escHtml(item.name||item.originalName||'Video');
+  const isLink=isVideoLinkItem(item);
+  const provider=(item.provider||'video').toUpperCase();
+  const meta=isLink?`${provider} LINK`:[formatSize(item.size||0),item.duration?formatDuration(item.duration):'STREAM'].filter(Boolean).join(' ･ ');
+  const downloadArgs=`${JSON.stringify(item.url)},${JSON.stringify(item.originalName||item.name)}`;
+  const openArgs=`${JSON.stringify(item.url)},event`;
+  const preview=isLink
+    ? item.embedUrl
+      ? `<iframe class="video-embed" src="${escAttr(item.embedUrl)}" title="${title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`
+      : item.thumbnailUrl
+        ? `<img class="video-thumb" src="${escAttr(item.thumbnailUrl)}" alt="${title}" loading="lazy">`
+        : `<div class="video-icon">${videoIconSvg()}</div>`
+    : `<video class="video-player" controls preload="metadata" src="${escAttr(item.url)}" title="${title}"></video>`;
+  if(selectMode){
+    return `<div class="video-track ${sel}" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false" onclick="toggleSelect('${item.firestoreId}',event)">
+      <div class="video-icon">${videoIconSvg()}</div>
+      <div class="video-main">
+        <div class="video-name">${title}</div>
+        <div class="video-meta">${escHtml(meta)}</div>
+      </div>
+    </div>`;
+  }
+  return `<div class="video-track" style="--enter-delay:${enterDelay}ms" data-id="${item.firestoreId}" data-nsfw="false">
+    <div class="video-preview">
+      ${preview}
+    </div>
+    <div class="video-main">
+      <div class="video-name">${title}</div>
+      <div class="video-meta">${escHtml(meta)}</div>
+      <div class="video-actions">
+        <button class="action-btn fav${item.fav?' active':''}" onclick="toggleFav('${item.firestoreId}',event)" title="お気に入り">${item.fav?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</button>
+        ${isLink?`<button class="action-btn" onclick='openExternalLink(${openArgs})' title="リンクを開く"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>`:`<button class="action-btn" onclick='downloadFile(${downloadArgs},event)' title="ダウンロード"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>`}
+        <button class="action-btn" onclick="confirmDelete('${item.firestoreId}',event)">×</button>
+      </div>
+      <div class="delete-confirm" id="dc-${item.firestoreId}">
+        <p>削除しますか？<br><span style="font-size:0.58rem;color:var(--muted);">Firestore の記録を削除します</span></p>
+        <div class="btn-row"><button class="btn-confirm" onclick="deleteImg('${item.firestoreId}')">DELETE</button><button class="btn-cancel" onclick="cancelDelete('${item.firestoreId}')">CANCEL</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function videoIconSvg(){
+  return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>';
 }
 
 function formatDuration(seconds){
@@ -3102,18 +3233,69 @@ function renderWorkCloud(){
 }
 
 function updateStats(){
-  const safeCount=images.filter(i=>!i.nsfw).length,nsfwCount=images.filter(i=>i.nsfw).length;
+  const audioCount=images.filter(isAudioItem).length;
+  const videoCount=images.filter(isVideoItem).length;
+  const imageItems=images.filter(isVisualItem);
+  const safeCount=imageItems.filter(i=>!i.nsfw).length,nsfwCount=imageItems.filter(i=>i.nsfw).length;
   document.getElementById('stat-total').textContent=images.length;
   document.getElementById('stat-fav').textContent=images.filter(i=>i.fav).length;
   document.getElementById('stat-nsfw').textContent=nsfwCount;
   document.getElementById('header-count').textContent=images.length;
   document.getElementById('count-safe').textContent=safeCount;
   document.getElementById('count-nsfw').textContent=nsfwCount;
-  document.getElementById('count-all').textContent=images.length;
+  document.getElementById('count-all').textContent=imageItems.length;
+  document.getElementById('count-audio').textContent=audioCount;
+  const videoCounter=document.getElementById('count-video');
+  if(videoCounter)videoCounter.textContent=videoCount;
+  updateStorageMeter();
 }
 
 function formatDate(iso){const d=new Date(iso);return`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;}
 function formatSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB';}
+
+function getItemSize(item){return Math.max(0,Number(item?.size||item?.bytes||0)||0);}
+function formatStorageSize(bytes){
+  const value=Math.max(0,Number(bytes)||0);
+  if(value<1024)return `${value} B`;
+  if(value<1048576)return `${(value/1024).toFixed(value<10240?1:0)} KB`;
+  if(value<1073741824)return `${(value/1048576).toFixed(value<104857600?1:0)} MB`;
+  return `${(value/1073741824).toFixed(2)} GB`;
+}
+function sumMediaSize(predicate){
+  return images.filter(predicate).reduce((sum,item)=>sum+getItemSize(item),0);
+}
+function updateStorageMeter(){
+  const used=images.reduce((sum,item)=>sum+getItemSize(item),0);
+  const imageBytes=sumMediaSize(isVisualItem);
+  const audioBytes=sumMediaSize(isAudioItem);
+  const videoBytes=sumMediaSize(isVideoItem);
+  const limit=Math.max(1,STORAGE_LIMIT_BYTES||DEFAULT_STORAGE_LIMIT_BYTES);
+  const remaining=Math.max(0,limit-used);
+  const pct=Math.min(100,(used/limit)*100);
+  const setText=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};
+  setText('storage-used',formatStorageSize(used));
+  setText('storage-remaining',formatStorageSize(remaining));
+  setText('storage-summary',`${pct.toFixed(pct<10?1:0)}% of ${formatStorageSize(limit)} estimate`);
+  setText('storage-image',formatStorageSize(imageBytes));
+  setText('storage-audio',formatStorageSize(audioBytes));
+  setText('storage-video',formatStorageSize(videoBytes));
+  const fill=document.getElementById('storage-fill');
+  if(fill){
+    fill.style.width=`${pct}%`;
+    fill.classList.toggle('warn',pct>=80);
+  }
+}
+window.setStorageLimit=function(){
+  const current=(STORAGE_LIMIT_BYTES/1073741824).toFixed(2).replace(/\.00$/,'');
+  const value=prompt('推定容量上限をGBで入力してください',current);
+  if(value===null)return;
+  const gb=Number(value);
+  if(!Number.isFinite(gb)||gb<=0){showToast('容量上限は1以上の数値で入力してください');return;}
+  STORAGE_LIMIT_BYTES=gb*1024*1024*1024;
+  localStorage.setItem('yoru-storage-limit-bytes',String(STORAGE_LIMIT_BYTES));
+  updateStorageMeter();
+  showToast(`容量上限を ${formatStorageSize(STORAGE_LIMIT_BYTES)} にしました`);
+};
 
 window.toggleFav=async function(id,e){
   if(e)e.stopPropagation();
@@ -3224,12 +3406,12 @@ function renderFocusLayout(list){
   document.getElementById('focus-info-tags').innerHTML=sortTagsForDisplay(img.tags||[]).map(t=>`<span class="modal-tag" onclick='setActiveTag(${JSON.stringify(t)})' title="${escHtml(t)}">${escHtml(formatTagLabel(t))}</span>`).join('');
 }
 
-window.focusSelect=function(idx){focusIndex=idx;if(focusMode)renderFocusLayout(getSorted().filter(i=>!isAudioItem(i)));};
+window.focusSelect=function(idx){focusIndex=idx;if(focusMode)renderFocusLayout(getSorted().filter(isVisualItem));};
 window.focusNavigate=function(dir){
-  const list=getSorted().filter(i=>!isAudioItem(i));if(!list.length)return;
+  const list=getSorted().filter(isVisualItem);if(!list.length)return;
   focusIndex=(focusIndex+dir+list.length)%list.length;renderFocusLayout(list);
 };
-window.openModalFromFocus=function(){const list=getSorted().filter(i=>!isAudioItem(i));if(list[focusIndex])openModal(list[focusIndex].firestoreId);};
+window.openModalFromFocus=function(){const list=getSorted().filter(isVisualItem);if(list[focusIndex])openModal(list[focusIndex].firestoreId);};
 
 // ===== MASONRY MODE (7) =====
 window.toggleMasonry=function(){
@@ -3327,6 +3509,12 @@ window.downloadCurrentImage=async function(){
   await downloadFile(img.url,img.originalName||img.name);
 };
 
+window.openExternalLink=function(url,e){
+  if(e)e.stopPropagation();
+  if(!url)return;
+  window.open(url,'_blank','noopener,noreferrer');
+};
+
 function updateModalRetagButton(img){
   const btn=document.getElementById('modal-retag-btn');
   if(!btn||!img)return;
@@ -3339,7 +3527,7 @@ function updateModalRetagButton(img){
 window.openModal=function(id){
   if(selectMode)return;
   const img=images.find(i=>i.firestoreId===id);if(!img)return;
-  if(isAudioItem(img))return;
+  if(isAudioItem(img)||isVideoItem(img))return;
   if(recentlyAddedIds.has(id)){
     recentlyAddedIds.delete(id);
     renderGallery(false);
@@ -3433,7 +3621,7 @@ window.toggleModalInfoMode=function(){
 // Modal navigation (1)
 window.navigateModal=function(dir){
   if(!currentModalId)return;
-  const modalList=currentList.filter(i=>!isAudioItem(i));
+  const modalList=currentList.filter(isVisualItem);
   const idx=modalList.findIndex(i=>i.firestoreId===currentModalId);
   if(idx===-1)return;
   const next=(idx+dir+modalList.length)%modalList.length;

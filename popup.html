@@ -34,212 +34,39 @@
     }
 
     .shell { padding: 14px; }
-
-    header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 2px 14px;
-    }
-
-    .app-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      box-shadow: 0 0 22px rgba(155, 124, 255, 0.34), 0 0 26px rgba(110, 231, 255, 0.12);
-    }
-
+    header { display: flex; align-items: center; gap: 12px; padding: 10px 2px 14px; }
+    .app-icon { width: 42px; height: 42px; border-radius: 12px; box-shadow: 0 0 22px rgba(155, 124, 255, 0.34), 0 0 26px rgba(110, 231, 255, 0.12); }
     .brand { min-width: 0; flex: 1; }
-    .brand-name {
-      font-size: 18px;
-      font-weight: 750;
-      letter-spacing: 0.04em;
-      color: #f2f5ff;
-    }
-    .brand-sub {
-      margin-top: 1px;
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .pill {
-      border: 1px solid rgba(110, 231, 255, 0.24);
-      color: var(--cyan);
-      background: rgba(110, 231, 255, 0.06);
-      border-radius: 999px;
-      padding: 3px 7px;
-      font: 600 10px "Consolas", monospace;
-      letter-spacing: 0.06em;
-    }
-
-    .summary {
-      border: 1px solid var(--line);
-      background: rgba(16, 16, 32, 0.78);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-
-    .summary-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .summary-title strong {
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 650;
-    }
-
-    .hint {
-      margin-top: 8px;
-      color: var(--soft);
-      font-size: 11px;
-    }
-
-    .section {
-      border: 1px solid var(--line);
-      background: rgba(16, 16, 32, 0.76);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-
-    .section-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .section-title {
-      font: 700 11px "Consolas", monospace;
-      letter-spacing: 0.12em;
-      color: var(--accent);
-      text-transform: uppercase;
-    }
-
-    .section-meta {
-      font-size: 10px;
-      color: var(--soft);
-    }
-
-    .fields {
-      padding: 10px 12px 12px;
-      display: grid;
-      gap: 9px;
-    }
-
-    label {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 4px;
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    label span:last-child {
-      color: var(--soft);
-      font: 500 10px "Consolas", monospace;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      height: 34px;
-      padding: 0 10px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      color: var(--text);
-      font: 12px "Consolas", "SFMono-Regular", monospace;
-      outline: none;
-      transition: border-color 0.16s, box-shadow 0.16s, background 0.16s;
-    }
-
-    input[type="text"]:focus {
-      border-color: rgba(155, 124, 255, 0.78);
-      box-shadow: 0 0 0 3px rgba(155, 124, 255, 0.12);
-      background: #1b1b34;
-    }
-
-    input.invalid {
-      border-color: rgba(255, 122, 165, 0.86);
-      box-shadow: 0 0 0 3px rgba(255, 122, 165, 0.12);
-    }
-
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    button {
-      height: 36px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: var(--panel-2);
-      color: var(--text);
-      font-size: 12px;
-      font-weight: 650;
-      cursor: pointer;
-      transition: transform 0.1s, border-color 0.16s, background 0.16s, color 0.16s;
-    }
-
+    .brand-name { font-size: 18px; font-weight: 750; letter-spacing: 0.04em; color: #f2f5ff; }
+    .brand-sub { margin-top: 1px; font-size: 11px; color: var(--muted); }
+    .pill { border: 1px solid rgba(110, 231, 255, 0.24); color: var(--cyan); background: rgba(110, 231, 255, 0.06); border-radius: 999px; padding: 3px 7px; font: 600 10px "Consolas", monospace; letter-spacing: 0.06em; }
+    .summary, .section { border: 1px solid var(--line); background: rgba(16, 16, 32, 0.78); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+    .summary { padding: 12px; }
+    .summary-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+    .summary-title strong { color: var(--text); font-size: 13px; font-weight: 650; }
+    .hint { margin-top: 8px; color: var(--soft); font-size: 11px; }
+    .chips { display: flex; gap: 6px; margin-top: 10px; }
+    .chip { flex: 1; border: 1px solid rgba(110, 231, 255, 0.16); background: rgba(110, 231, 255, 0.05); color: var(--cyan); border-radius: 999px; padding: 4px 0; text-align: center; font: 700 10px "Consolas", monospace; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, 0.02); }
+    .section-title { font: 700 11px "Consolas", monospace; letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; }
+    .section-meta { font-size: 10px; color: var(--soft); }
+    .fields { padding: 10px 12px 12px; display: grid; gap: 9px; }
+    label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; font-size: 11px; color: var(--muted); }
+    label span:last-child { color: var(--soft); font: 500 10px "Consolas", monospace; }
+    input[type="text"] { width: 100%; height: 34px; padding: 0 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; color: var(--text); font: 12px "Consolas", monospace; outline: none; transition: border-color 0.16s, box-shadow 0.16s, background 0.16s; }
+    input[type="text"]:focus { border-color: rgba(155, 124, 255, 0.78); box-shadow: 0 0 0 3px rgba(155, 124, 255, 0.12); background: #1b1b34; }
+    input.invalid { border-color: rgba(255, 122, 165, 0.86); box-shadow: 0 0 0 3px rgba(255, 122, 165, 0.12); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    button { height: 36px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel-2); color: var(--text); font-size: 12px; font-weight: 650; cursor: pointer; transition: transform 0.1s, border-color 0.16s, background 0.16s, color 0.16s; }
     button:hover { border-color: var(--line-2); background: #1b1b34; }
     button:active { transform: translateY(1px); }
-
-    #btn-save {
-      border-color: rgba(155, 124, 255, 0.36);
-      background: linear-gradient(135deg, rgba(155, 124, 255, 0.95), rgba(78, 190, 255, 0.9));
-      color: white;
-    }
-
+    #btn-save { border-color: rgba(155, 124, 255, 0.36); background: linear-gradient(135deg, rgba(155, 124, 255, 0.95), rgba(78, 190, 255, 0.9)); color: white; }
     #btn-reset { color: var(--muted); }
-    #btn-gallery {
-      width: 100%;
-      margin-top: 8px;
-      color: var(--cyan);
-      border-color: rgba(110, 231, 255, 0.22);
-      background: rgba(110, 231, 255, 0.06);
-    }
-
-    #status {
-      min-height: 32px;
-      margin-top: 10px;
-      padding: 8px 10px;
-      border: 1px solid transparent;
-      border-radius: 7px;
-      color: var(--soft);
-      font-size: 11px;
-    }
-
-    #status.ok {
-      color: var(--ok);
-      border-color: rgba(130, 242, 179, 0.24);
-      background: rgba(130, 242, 179, 0.06);
-    }
-
-    #status.err {
-      color: var(--danger);
-      border-color: rgba(255, 122, 165, 0.24);
-      background: rgba(255, 122, 165, 0.06);
-    }
-
-    footer {
-      padding: 4px 2px 0;
-      color: var(--soft);
-      font-size: 10px;
-      text-align: center;
-    }
+    #btn-gallery { width: 100%; margin-top: 8px; color: var(--cyan); border-color: rgba(110, 231, 255, 0.22); background: rgba(110, 231, 255, 0.06); }
+    #status { min-height: 32px; margin-top: 10px; padding: 8px 10px; border: 1px solid transparent; border-radius: 7px; color: var(--soft); font-size: 11px; }
+    #status.ok { color: var(--ok); border-color: rgba(130, 242, 179, 0.24); background: rgba(130, 242, 179, 0.06); }
+    #status.err { color: var(--danger); border-color: rgba(255, 122, 165, 0.24); background: rgba(255, 122, 165, 0.06); }
+    footer { padding: 4px 2px 0; color: var(--soft); font-size: 10px; text-align: center; }
   </style>
 </head>
 <body>
@@ -248,17 +75,23 @@
       <img class="app-icon" src="site-icon.png" alt="">
       <div class="brand">
         <div class="brand-name">Nocturne Clipper</div>
-        <div class="brand-sub">Media capture to Cloudinary + Firestore</div>
+        <div class="brand-sub">Capture media files and video links</div>
       </div>
       <div class="pill">MV3</div>
     </header>
 
     <section class="summary">
       <div class="summary-title">
-        <strong>メディア保存の接続設定</strong>
+        <strong>Media capture settings</strong>
         <span>Ready</span>
       </div>
-      <p class="hint">画像の右クリック保存と、ライブラリへの音楽追加に使う保存先をここで管理します。</p>
+      <p class="hint">Right-click page media or a video page to save it into your Nocturne library.</p>
+      <div class="chips">
+        <span class="chip">IMAGE</span>
+        <span class="chip">AUDIO</span>
+        <span class="chip">VIDEO</span>
+        <span class="chip">LINK</span>
+      </div>
     </section>
 
     <section class="section">
@@ -293,20 +126,19 @@
           <input type="text" id="firebaseApiKey" placeholder="AIza..." autocomplete="off" />
         </div>
         <div class="field">
-          <label for="firestoreCollection"><span>Collection</span><span>images</span></label>
+          <label for="firestoreCollection"><span>Collection</span><span>media</span></label>
           <input type="text" id="firestoreCollection" placeholder="yoru-images" autocomplete="off" />
         </div>
       </div>
     </section>
 
     <div class="actions">
-      <button id="btn-reset" type="button">リセット</button>
-      <button id="btn-save" type="button">保存</button>
+      <button id="btn-reset" type="button">Reset</button>
+      <button id="btn-save" type="button">Save</button>
     </div>
-    <button id="btn-gallery" type="button">ギャラリーを開く</button>
-    <div id="status">設定を読み込み中...</div>
-
-    <footer>All sites / image context menu</footer>
+    <button id="btn-gallery" type="button">Open Library</button>
+    <div id="status">Loading settings...</div>
+    <footer>All sites / media and link context menus</footer>
   </main>
 
   <script src="popup.js"></script>

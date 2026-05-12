@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nocturne-pwa-v6';
+const CACHE_NAME = 'nocturne-pwa-v10';
 const APP_SHELL = [
   './',
   './index.html',
@@ -84,6 +84,8 @@ function shouldRuntimeCache(request, response){
 
   return url.origin === self.location.origin ||
     type.startsWith('image/') ||
+    type.startsWith('audio/') ||
+    type.startsWith('video/') ||
     type.includes('font') ||
     url.hostname === 'fonts.googleapis.com' ||
     url.hostname === 'fonts.gstatic.com';

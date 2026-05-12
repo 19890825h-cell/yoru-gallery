@@ -1,4 +1,3 @@
-// ===== デフォルト設定 =====
 const DEFAULT_CONFIG = {
   cloudinaryCloudName: 'dlab6ddls',
   cloudinaryUploadPreset: 'yoru_gallery',
@@ -7,119 +6,207 @@ const DEFAULT_CONFIG = {
   firestoreCollection: 'yoru-images',
 };
 
-// ===== 初期化 =====
+const MENU_MEDIA_ID = 'saveMediaToNocturne';
+const MENU_LINK_ID = 'saveLinkToNocturne';
+
 chrome.runtime.onInstalled.addListener(async () => {
   const existing = await chrome.storage.sync.get(DEFAULT_CONFIG);
   await chrome.storage.sync.set(existing);
 
-  // 既存メニューを一旦消してから作成（重複防止）
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
-      id: 'saveToYoru',
-      title: 'Nocturne Clipperに保存',
-      contexts: ['image'],
-      // 全サイト対応 — documentUrlPatterns 制限なし
+      id: MENU_MEDIA_ID,
+      title: 'Nocturneにメディア保存',
+      contexts: ['image', 'video', 'audio'],
+    });
+    chrome.contextMenus.create({
+      id: MENU_LINK_ID,
+      title: 'Nocturneにリンク保存',
+      contexts: ['page', 'link'],
     });
   });
 });
 
-// ===== コンテキストメニュークリック =====
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId !== 'saveToYoru') return;
-
-  log('コンテキストメニュー起動', { srcUrl: info.srcUrl, pageUrl: info.pageUrl });
-
   const config = await chrome.storage.sync.get(DEFAULT_CONFIG);
 
   try {
-    // --- Step 1: 画像データ取得 ---
-    notify('保存中… (1/2) 画像を取得しています');
-    const base64Data = await getImageBase64(info, tab);
-    log('画像取得完了', base64Data.substring(0, 60) + '...');
+    if (info.menuItemId === MENU_LINK_ID) {
+      notify('リンクを保存中...');
+      const result = await saveVideoLink(info, tab, config);
+      notify(`リンクを保存しました: ${result.provider}`, 'success');
+      return;
+    }
 
-    // --- Step 2: Cloudinaryアップロード ---
-    notify('保存中… (2/2) アップロード中');
-    const cloudResult = await uploadToCloudinary(base64Data, config);
-    log('Cloudinaryアップロード完了', cloudResult.secure_url);
-
-    // --- Step 3: Firestore保存 ---
-    notify('保存中… (2/2) Firestoreへ書き込み中');
-    await saveToFirestore(
-      {
-        url:      cloudResult.secure_url,
-        publicId: cloudResult.public_id,
-        name:     extractName(info.srcUrl || ''),
-        date:     new Date().toISOString(),
-        fav:      false,
-        size:     0,
-      },
-      config
-    );
-
-    notify(`保存完了！ ${cloudResult.width}×${cloudResult.height}px`, 'success');
-
+    if (info.menuItemId !== MENU_MEDIA_ID) return;
+    await saveMediaFile(info, tab, config);
   } catch (err) {
-    console.error('[Nocturne] 保存失敗:', err);
-    notify(`保存失敗: ${err.message}`, 'error');
+    console.error('[Nocturne]', err);
+    notify(`保存に失敗しました: ${err.message}`, 'error');
   }
 });
 
-// ===== 画像base64取得（全パターン対応） =====
-async function getImageBase64(info, tab) {
-  const srcUrl = info.srcUrl;
+async function saveMediaFile(info, tab, config) {
+  const mediaType = getContextMediaType(info);
+  const resourceType = mediaType === 'image' ? 'image' : 'video';
+  const sourceUrl = info.srcUrl || info.linkUrl || info.pageUrl || '';
 
-  // パターン1: blob: URL → content script経由
-  if (srcUrl && srcUrl.startsWith('blob:')) {
-    log('blob URL検出 → content script経由で取得');
-    return await fetchViaContentScript(tab.id, srcUrl);
-  }
+  notify(`${mediaType}を取得しています...`);
+  const dataUrl = await getMediaBase64(info, tab, mediaType);
 
-  // パターン2: data: URL → そのまま使う
-  if (srcUrl && srcUrl.startsWith('data:')) {
-    log('data URL検出 → そのまま使用');
-    return srcUrl;
-  }
+  notify('Cloudinaryへアップロード中...');
+  const cloudResult = await uploadToCloudinary(dataUrl, config, resourceType);
+  const originalName = extractFilename(sourceUrl, mediaType);
+  const bytes = cloudResult.bytes || estimateBase64Bytes(dataUrl);
 
-  // パターン3: 通常のhttps URL → service workerで直接fetch（CORS失敗時はcontent script経由）
-  if (srcUrl && srcUrl.startsWith('http')) {
-    log('https URL検出 → 直接fetch試行');
+  await saveToFirestore({
+    url: cloudResult.secure_url,
+    publicId: cloudResult.public_id,
+    name: extractName(sourceUrl, mediaType),
+    originalName,
+    date: new Date().toISOString(),
+    fav: false,
+    nsfw: false,
+    size: bytes || 0,
+    resourceType: cloudResult.resource_type || resourceType,
+    format: cloudResult.format || getExtension(originalName),
+    mediaType,
+    mimeType: parseMimeType(dataUrl),
+    duration: cloudResult.duration || 0,
+    sourceType: 'file',
+  }, config);
+
+  notify(`保存しました: ${mediaType}`, 'success');
+}
+
+async function saveVideoLink(info, tab, config) {
+  const pageUrl = info.linkUrl || info.pageUrl || tab?.url || '';
+  if (!pageUrl) throw new Error('保存するURLが見つかりませんでした');
+
+  const meta = await getLinkMetadata(pageUrl, tab);
+  await saveToFirestore({
+    url: meta.url,
+    name: meta.title,
+    originalName: meta.title,
+    date: new Date().toISOString(),
+    fav: false,
+    nsfw: false,
+    size: 0,
+    resourceType: 'remote',
+    format: 'link',
+    mediaType: 'videoLink',
+    mimeType: 'text/uri-list',
+    duration: 0,
+    provider: meta.provider,
+    thumbnailUrl: meta.thumbnailUrl,
+    embedUrl: meta.embedUrl,
+    sourceType: 'link',
+  }, config);
+
+  return meta;
+}
+
+async function getLinkMetadata(url, tab) {
+  const youtubeId = getYouTubeId(url);
+  if (youtubeId) {
+    const fallback = {
+      provider: 'youtube',
+      url: normalizeYouTubeUrl(youtubeId),
+      title: tab?.title || `YouTube ${youtubeId}`,
+      thumbnailUrl: `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
+      embedUrl: `https://www.youtube.com/embed/${youtubeId}`,
+    };
+
     try {
-      return await fetchImageAsBase64(srcUrl);
-    } catch (err) {
-      log('直接fetch失敗（CORS？）→ content script経由にフォールバック:', err.message);
-      return await fetchViaContentScript(tab.id, srcUrl);
+      const res = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(fallback.url)}`);
+      if (!res.ok) return fallback;
+      const data = await res.json();
+      return {
+        ...fallback,
+        title: data.title || fallback.title,
+        thumbnailUrl: data.thumbnail_url || fallback.thumbnailUrl,
+      };
+    } catch {
+      return fallback;
     }
   }
 
-  // パターン4: srcUrlが空 → content scriptでDOM取得を試みる
-  log('srcUrl未取得 → content script経由でDOM検索');
-  return await fetchLastImageViaScript(tab.id);
+  return {
+    provider: 'link',
+    url,
+    title: tab?.title || extractName(url, 'video'),
+    thumbnailUrl: '',
+    embedUrl: '',
+  };
 }
 
-// ===== content script経由でblob URLを取得 =====
+function getYouTubeId(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    const host = url.hostname.replace(/^www\./, '').toLowerCase();
+    if (host === 'youtu.be') return cleanYouTubeId(url.pathname.slice(1));
+    if (host.endsWith('youtube.com')) {
+      if (url.pathname.startsWith('/watch')) return cleanYouTubeId(url.searchParams.get('v'));
+      if (url.pathname.startsWith('/shorts/')) return cleanYouTubeId(url.pathname.split('/')[2]);
+      if (url.pathname.startsWith('/embed/')) return cleanYouTubeId(url.pathname.split('/')[2]);
+    }
+  } catch {
+    return '';
+  }
+  return '';
+}
+
+function cleanYouTubeId(id) {
+  const value = String(id || '').match(/[a-zA-Z0-9_-]{11}/)?.[0] || '';
+  return value;
+}
+
+function normalizeYouTubeUrl(id) {
+  return `https://www.youtube.com/watch?v=${id}`;
+}
+
+function getContextMediaType(info) {
+  if (info.mediaType === 'video') return 'video';
+  if (info.mediaType === 'audio') return 'audio';
+  const url = String(info.srcUrl || '').toLowerCase();
+  if (/\.(mp4|webm|mov|m4v|ogv)(\?|#|$)/.test(url)) return 'video';
+  if (/\.(mp3|wav|m4a|aac|ogg|flac)(\?|#|$)/.test(url)) return 'audio';
+  return 'image';
+}
+
+async function getMediaBase64(info, tab, mediaType) {
+  const srcUrl = info.srcUrl;
+  if (srcUrl && srcUrl.startsWith('blob:')) return await fetchViaContentScript(tab.id, srcUrl);
+  if (srcUrl && srcUrl.startsWith('data:')) return srcUrl;
+  if (srcUrl && srcUrl.startsWith('http')) {
+    try {
+      return await fetchMediaAsBase64(srcUrl);
+    } catch (err) {
+      log('direct fetch failed, using content script:', err.message);
+      return await fetchViaContentScript(tab.id, srcUrl);
+    }
+  }
+  return await fetchLastMediaViaScript(tab.id, mediaType);
+}
+
 async function fetchViaContentScript(tabId, url) {
   try {
-    const result = await chrome.tabs.sendMessage(tabId, {
-      type: 'FETCH_IMAGE_AS_BASE64',
-      url,
-    });
+    const result = await chrome.tabs.sendMessage(tabId, { type: 'FETCH_MEDIA_AS_BASE64', url });
     if (result && result.error) throw new Error('content script: ' + result.error);
     if (result && result.base64) return result.base64;
-    throw new Error('content scriptからレスポンスなし');
+    throw new Error('content script returned no media data');
   } catch (err) {
-    // content scriptが応答しない場合はscripting APIで注入
-    log('sendMessage失敗、scripting APIにフォールバック:', err.message);
+    log('sendMessage failed, falling back to scripting API:', err.message);
     return await injectAndFetch(tabId, url);
   }
 }
 
-// ===== scripting APIで直接注入してfetch =====
 async function injectAndFetch(tabId, url) {
   const results = await chrome.scripting.executeScript({
     target: { tabId },
-    func: async (blobUrl) => {
+    func: async (mediaUrl) => {
       try {
-        const res = await fetch(blobUrl);
+        const res = await fetch(mediaUrl);
         const blob = await res.blob();
         return await new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -127,37 +214,33 @@ async function injectAndFetch(tabId, url) {
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
-      } catch (e) {
+      } catch {
         return null;
       }
     },
     args: [url],
   });
   const base64 = results?.[0]?.result;
-  if (!base64) throw new Error('scripting APIでの画像取得に失敗');
+  if (!base64) throw new Error('ページからメディアを取得できませんでした');
   return base64;
 }
 
-// ===== srcUrlが取れない場合: 最後に表示した画像をDOM検索 =====
-async function fetchLastImageViaScript(tabId) {
+async function fetchLastMediaViaScript(tabId, mediaType) {
   const results = await chrome.scripting.executeScript({
     target: { tabId },
-    func: async () => {
-      // ページ上の画像要素を汎用的に探す
-      const selectors = [
-        'img[src^="blob:"]',
-        'img[src^="data:"]',
-        'img[src^="https://"]',
-        'canvas',
-      ];
+    func: async (type) => {
+      const selectors = type === 'video'
+        ? ['video[src]', 'video source[src]', 'a[href$=".mp4"]', 'a[href$=".webm"]', 'canvas']
+        : type === 'audio'
+          ? ['audio[src]', 'audio source[src]', 'a[href$=".mp3"]', 'a[href$=".wav"]', 'a[href$=".m4a"]']
+          : ['img[src^="blob:"]', 'img[src^="data:"]', 'img[src^="https://"]', 'canvas'];
+
       for (const sel of selectors) {
         const el = document.querySelector(sel);
         if (!el) continue;
+        if (el.tagName === 'CANVAS') return el.toDataURL('image/png');
 
-        if (el.tagName === 'CANVAS') {
-          return el.toDataURL('image/png');
-        }
-        const src = el.src || el.getAttribute('src');
+        const src = el.src || el.currentSrc || el.getAttribute('src') || el.getAttribute('href');
         if (!src) continue;
 
         try {
@@ -169,28 +252,26 @@ async function fetchLastImageViaScript(tabId) {
             reader.onerror = reject;
             reader.readAsDataURL(blob);
           });
-        } catch (_) {
+        } catch {
           continue;
         }
       }
       return null;
     },
-    args: [],
+    args: [mediaType],
   });
   const base64 = results?.[0]?.result;
-  if (!base64) throw new Error('ページから画像を取得できませんでした。画像の上で右クリックしているか確認してください。');
+  if (!base64) throw new Error('ページからメディアを取得できませんでした');
   return base64;
 }
 
-// ===== 通常URLから直接取得 =====
-async function fetchImageAsBase64(url) {
+async function fetchMediaAsBase64(url) {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`画像fetch失敗 HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`fetch failed: HTTP ${response.status}`);
   const blob = await response.blob();
   return blobToBase64(blob);
 }
 
-// ===== Blob → base64（Service Worker対応・チャンク処理） =====
 async function blobToBase64(blob) {
   const buffer = await blob.arrayBuffer();
   const bytes = new Uint8Array(buffer);
@@ -200,18 +281,17 @@ async function blobToBase64(blob) {
     const chunk = bytes.subarray(i, i + chunkSize);
     binary += String.fromCharCode(...chunk);
   }
-  return `data:${blob.type};base64,` + btoa(binary);
+  return `data:${blob.type || 'application/octet-stream'};base64,` + btoa(binary);
 }
 
-// ===== Cloudinaryアップロード =====
-async function uploadToCloudinary(base64Data, config) {
+async function uploadToCloudinary(dataUrl, config, resourceType) {
   const formData = new FormData();
-  formData.append('file', base64Data);
+  formData.append('file', dataUrl);
   formData.append('upload_preset', config.cloudinaryUploadPreset);
   formData.append('folder', 'yoru');
 
   const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${config.cloudinaryCloudName}/image/upload`,
+    `https://api.cloudinary.com/v1_1/${config.cloudinaryCloudName}/${resourceType}/upload`,
     { method: 'POST', body: formData }
   );
 
@@ -223,29 +303,36 @@ async function uploadToCloudinary(base64Data, config) {
   return json;
 }
 
-// ===== Firestoreに保存（REST API） =====
-// フィールド名はギャラリー（yoru-gallery3.html）の読み取り構造に合わせる
 async function saveToFirestore(data, config) {
   const url =
     `https://firestore.googleapis.com/v1/projects/${config.firebaseProjectId}` +
     `/databases/(default)/documents/${config.firestoreCollection}` +
     `?key=${config.firebaseApiKey}`;
 
-  const body = {
-    fields: {
-      url:      { stringValue: data.url },
-      publicId: { stringValue: data.publicId },
-      name:     { stringValue: data.name },
-      date:     { stringValue: data.date },
-      fav:      { booleanValue: data.fav },
-      size:     { integerValue: String(data.size) },
-    },
+  const fields = {
+    url: { stringValue: data.url || '' },
+    publicId: { stringValue: data.publicId || '' },
+    name: { stringValue: data.name || '' },
+    originalName: { stringValue: data.originalName || '' },
+    date: { stringValue: data.date },
+    fav: { booleanValue: Boolean(data.fav) },
+    nsfw: { booleanValue: Boolean(data.nsfw) },
+    size: { integerValue: String(data.size || 0) },
+    resourceType: { stringValue: data.resourceType || '' },
+    format: { stringValue: data.format || '' },
+    mediaType: { stringValue: data.mediaType || 'image' },
+    mimeType: { stringValue: data.mimeType || '' },
+    duration: { doubleValue: Number(data.duration || 0) },
+    provider: { stringValue: data.provider || '' },
+    thumbnailUrl: { stringValue: data.thumbnailUrl || '' },
+    embedUrl: { stringValue: data.embedUrl || '' },
+    sourceType: { stringValue: data.sourceType || '' },
   };
 
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ fields }),
   });
 
   const json = await res.json();
@@ -256,43 +343,54 @@ async function saveToFirestore(data, config) {
   return json;
 }
 
-// ===== ユーティリティ =====
-
-// 拡張子付きファイル名
-function extractFilename(url) {
-  if (!url) return `yoru_${Date.now()}.png`;
+function extractFilename(url, mediaType = 'image') {
+  const fallbackExt = mediaType === 'video' ? 'mp4' : mediaType === 'audio' ? 'mp3' : 'png';
+  if (!url) return `nocturne_${Date.now()}.${fallbackExt}`;
   try {
     const path = new URL(url).pathname;
-    return path.split('/').pop() || `yoru_${Date.now()}.png`;
+    return decodeURIComponent(path.split('/').pop()) || `nocturne_${Date.now()}.${fallbackExt}`;
   } catch {
-    return `yoru_${Date.now()}.png`;
+    return `nocturne_${Date.now()}.${fallbackExt}`;
   }
 }
 
-// 拡張子なしファイル名（ギャラリーの name フィールド用）
-function extractName(url) {
-  const filename = extractFilename(url);
-  if (!filename || filename.length < 3) return `yoru_${Date.now()}`;
-  // blob: UUID や意味のない文字列の場合はドメイン+日時にする
+function extractName(url, mediaType = 'image') {
+  const filename = extractFilename(url, mediaType);
   const noExt = filename.replace(/\.[^.]+$/, '');
-  if (/^[0-9a-f-]{32,}$/i.test(noExt)) {
+  if (!noExt || /^[0-9a-f-]{32,}$/i.test(noExt)) {
     try {
       const host = new URL(url).hostname.replace('www.', '').split('.')[0];
       return `${host}_${Date.now()}`;
-    } catch { return `yoru_${Date.now()}`; }
+    } catch {
+      return `nocturne_${Date.now()}`;
+    }
   }
-  return noExt || `yoru_${Date.now()}`;
+  return noExt;
+}
+
+function getExtension(filename) {
+  const match = String(filename || '').match(/\.([a-z0-9]+)$/i);
+  return match ? match[1].toLowerCase() : '';
+}
+
+function parseMimeType(dataUrl) {
+  const match = String(dataUrl || '').match(/^data:([^;,]+)[;,]/);
+  return match ? match[1] : '';
+}
+
+function estimateBase64Bytes(dataUrl) {
+  const base64 = String(dataUrl || '').split(',')[1] || '';
+  return Math.floor((base64.length * 3) / 4);
 }
 
 function notify(message, type = 'progress') {
   const titles = {
-    success:  'Nocturne - 保存完了',
-    error:    'Nocturne - エラー',
+    success: 'Nocturne - 保存完了',
+    error: 'Nocturne - エラー',
     progress: 'Nocturne',
   };
-  // アイコンが存在しない場合でもクラッシュしないよう lastError を握りつぶす
   chrome.notifications.create(
-    `yoru_${Date.now()}`,
+    `nocturne_${Date.now()}`,
     {
       type: 'basic',
       iconUrl: 'icons/icon128.png',
