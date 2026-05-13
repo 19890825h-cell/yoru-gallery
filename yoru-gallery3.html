@@ -204,7 +204,7 @@ body.video-mode .sidebar-toggle{display:none!important;}
 .video-crt-wall::before{content:'';position:absolute;inset:0;z-index:2;background:radial-gradient(circle,rgba(255,255,255,0.2) 0 1px,transparent 1.4px),repeating-linear-gradient(to bottom,rgba(255,255,255,0.08) 0 1px,rgba(0,0,0,0.28) 2px 4px);background-size:5px 5px,100% 4px;mix-blend-mode:overlay;}
 .video-crt-wall::after{content:'';position:absolute;inset:-8%;z-index:3;background:radial-gradient(circle at 50% 45%,transparent 0 42%,rgba(0,0,0,0.5) 78%,rgba(0,0,0,0.86) 100%);box-shadow:inset 0 0 80px rgba(111,251,255,0.14);animation:crtPulse 5.5s ease-in-out infinite;}
 .video-crt-cell{position:absolute;inset:0;background:#05050b center/cover no-repeat;overflow:hidden;transform:translateZ(0);}
-.video-crt-player{position:absolute;inset:-12%;width:124%;height:124%;border:0;opacity:0.78;filter:saturate(1.35) contrast(1.08) brightness(0.72);pointer-events:none;}
+.video-crt-player{position:absolute;inset:-12%;width:124%;height:124%;border:0;opacity:1;filter:saturate(1.35) contrast(1.08) brightness(0.72);pointer-events:none;}
 .video-crt-cell::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,0,80,0.08),rgba(0,255,255,0.08));mix-blend-mode:screen;animation:crtDrift 7s linear infinite;}
 .video-crt-cell::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.18);}
 .video-crt-empty{background:radial-gradient(circle at 50% 50%,rgba(111,251,255,0.16),transparent 38%),#05050b;}
@@ -3027,6 +3027,7 @@ function loadVideoCrtIndex(index){
   const cell=document.querySelector('.video-crt-cell');
   if(cell){
     cell.style.backgroundImage=`url("${item.thumb}")`;
+    cell.classList.remove('is-playing');
     cell.title=item.title||'';
   }
   const iframe=document.getElementById('video-crt-player');
@@ -3043,6 +3044,13 @@ function loadVideoCrtIndex(index){
       events:{
         onReady:event=>{try{event.target.mute();event.target.playVideo();}catch(_){}},
         onStateChange:event=>{
+          if(event.data===YT.PlayerState.PLAYING){
+            const activeCell=document.querySelector('.video-crt-cell');
+            if(activeCell){
+              activeCell.style.backgroundImage='none';
+              activeCell.classList.add('is-playing');
+            }
+          }
           if(event.data===YT.PlayerState.ENDED)loadVideoCrtIndex(videoCrtIndex+1);
         }
       }
