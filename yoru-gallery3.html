@@ -201,6 +201,7 @@ body.booting .top-section{opacity:0;transform:translateY(16px);animation:bootSec
 .video-crt-wall::before{content:'';position:absolute;inset:0;z-index:2;background:radial-gradient(circle,rgba(255,255,255,0.2) 0 1px,transparent 1.4px),repeating-linear-gradient(to bottom,rgba(255,255,255,0.08) 0 1px,rgba(0,0,0,0.28) 2px 4px);background-size:5px 5px,100% 4px;mix-blend-mode:overlay;}
 .video-crt-wall::after{content:'';position:absolute;inset:-8%;z-index:3;background:radial-gradient(circle at 50% 45%,transparent 0 42%,rgba(0,0,0,0.5) 78%,rgba(0,0,0,0.86) 100%);box-shadow:inset 0 0 80px rgba(111,251,255,0.14);animation:crtPulse 5.5s ease-in-out infinite;}
 .video-crt-cell{position:relative;min-height:260px;background:#05050b center/cover no-repeat;overflow:hidden;transform:translateZ(0);}
+.video-crt-player{position:absolute;inset:-12%;width:124%;height:124%;border:0;opacity:0.78;filter:saturate(1.35) contrast(1.08) brightness(0.72);pointer-events:none;}
 .video-crt-cell::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,0,80,0.08),rgba(0,255,255,0.08));mix-blend-mode:screen;animation:crtDrift 7s linear infinite;}
 .video-crt-cell::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.18);}
 .video-crt-empty{min-height:260px;background:radial-gradient(circle at 50% 50%,rgba(111,251,255,0.16),transparent 38%),#05050b;}
@@ -2956,8 +2957,15 @@ function updateLoadMore(){
 function getVideoWallSources(list){
   return list.filter(isVideoLinkItem).map(item=>({
     title:item.name||item.originalName||'Video link',
-    thumb:item.thumbnailUrl||getYouTubeThumbFromUrl(item.url)||''
-  })).filter(item=>item.thumb);
+    thumb:item.thumbnailUrl||getYouTubeThumbFromUrl(item.url)||'',
+    embed:getCrtEmbedUrl(item)
+  })).filter(item=>item.thumb||item.embed);
+}
+
+function getCrtEmbedUrl(item){
+  const id=getYouTubeVideoId(item.embedUrl||item.url);
+  if(!id)return '';
+  return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&playsinline=1&loop=1&playlist=${id}&modestbranding=1&rel=0&iv_load_policy=3`;
 }
 
 function getYouTubeThumbFromUrl(url){
@@ -2985,7 +2993,8 @@ function buildVideoCrtWall(list){
     const item=sources[index%sources.length];
     const style=item?` style="background-image:url('${escAttr(item.thumb)}')"`:'';
     const title=item?` title="${escAttr(item.title)}"`:'';
-    return `<div class="video-crt-cell${item?'':' video-crt-empty'}"${style}${title}></div>`;
+    const player=item?.embed?`<iframe class="video-crt-player" src="${escAttr(item.embed)}" title="${escAttr(item.title)}" allow="autoplay; encrypted-media; picture-in-picture" loading="lazy"></iframe>`:'';
+    return `<div class="video-crt-cell${item?'':' video-crt-empty'}"${style}${title}>${player}</div>`;
   }).join('');
   return `<div class="video-crt-wall" aria-hidden="true">${cells}</div><div class="video-crt-spacer" aria-hidden="true"></div>`;
 }
@@ -3001,6 +3010,12 @@ function startVideoCrtWall(list){
       const item=shuffled[index%shuffled.length];
       cell.style.backgroundImage=`url("${item.thumb}")`;
       cell.title=item.title||'';
+      const current=cell.querySelector('.video-crt-player')?.getAttribute('src')||'';
+      if(item.embed&&current!==item.embed){
+        cell.innerHTML=`<iframe class="video-crt-player" src="${escAttr(item.embed)}" title="${escAttr(item.title)}" allow="autoplay; encrypted-media; picture-in-picture" loading="lazy"></iframe>`;
+      }else if(!item.embed){
+        cell.innerHTML='';
+      }
     });
   };
   update();
